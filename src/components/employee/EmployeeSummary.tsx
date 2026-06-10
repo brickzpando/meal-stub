@@ -1,0 +1,124 @@
+"use client";
+import { useAuth } from "@/context/AuthContext";
+import { useMealStub } from "@/context/MealStubContext";
+import { wkBal, rwBal, totalBal } from "@/lib/balance";
+import { currentWeek } from "@/lib/helpers";
+
+import {
+  Wallet,
+  ShoppingBag,
+  CalendarDays,
+  Gift,
+  CreditCard,
+} from "lucide-react";
+
+export default function EmployeeSummary() {
+  const { user } = useAuth();
+
+  const { transactions } = useMealStub();
+
+  if (!user?.employee) {
+    return null;
+  }
+
+  const empId = user.employee.id;
+
+  const week = currentWeek();
+
+  const weeklyBalance = wkBal(empId, week, transactions);
+
+  const rewardBalance = rwBal(empId, transactions);
+
+  const totalBalance = totalBal(empId, week, transactions);
+
+  const issued = transactions
+    .filter(
+      (t) => t.empId === empId && (t.type === "weekly" || t.type === "reward"),
+    )
+    .reduce((a, b) => a + b.amount, 0);
+
+  const spent = transactions
+    .filter((t) => t.empId === empId && t.type === "purchase")
+    .reduce((a, b) => a + b.amount, 0);
+
+  const cards = [
+    {
+      title: "Weekly Balance",
+      value: weeklyBalance,
+      icon: CalendarDays,
+      bg: "bg-emerald-100",
+      color: "text-emerald-600",
+    },
+    {
+      title: "Reward Balance",
+      value: rewardBalance,
+      icon: Gift,
+      bg: "bg-amber-100",
+      color: "text-amber-600",
+    },
+    {
+      title: "Total Balance",
+      value: totalBalance,
+      icon: CreditCard,
+      bg: "bg-blue-100",
+      color: "text-blue-600",
+    },
+    {
+      title: "Total Issued",
+      value: issued,
+      icon: Wallet,
+      bg: "bg-cyan-100",
+      color: "text-cyan-600",
+    },
+    {
+      title: "Total Used",
+      value: spent,
+      icon: ShoppingBag,
+      bg: "bg-rose-100",
+      color: "text-rose-600",
+    },
+  ];
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-slate-900">
+          Account Summary
+        </h3>
+
+        <p className="mt-1 text-sm text-slate-500">
+          Overview of balances, issued credits, and spending.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {cards.map((card) => {
+          const Icon = card.icon;
+
+          return (
+            <div
+              key={card.title}
+              className="flex h-32.5 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-white"
+            >
+              <div>
+                <p className="text-sm font-medium text-slate-500">
+                  {card.title}
+                </p>
+
+                <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                  ₱{card.value.toLocaleString()}
+                </h2>
+              </div>
+
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.bg}`}
+              >
+                <Icon className={`h-6 w-6 ${card.color}`} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

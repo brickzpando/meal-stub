@@ -1,0 +1,43 @@
+"use client";
+import { useRouter } from "next/navigation";
+import TopBar from "@/components/TopBar";
+import DashboardStats from "@/components/hr/DashboardStats";
+import AddEmployeeForm from "@/components/hr/AddEmployeeForm";
+import WeeklyStubForm from "@/components/hr/WeeklyStubForm";
+import RewardStubForm from "@/components/hr/RewardStubForm";
+import EmployeeTable from "@/components/hr/EmployeeTable";
+import IssueHistoryTable from "@/components/hr/IssueHistoryTable";
+import { useAuth } from "@/context/AuthContext";
+export default function HRPage() {
+  const router = useRouter();
+
+  const { logout } = useAuth();
+
+  return (
+    <>
+      <TopBar
+        role="HR"
+        onLogout={() => {
+          logout();
+          router.push("/login");
+        }}
+      />
+      <main className="space-y-6 p-4 md:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="text-3xl font-bold text-slate-900">HR Dashboard</h1>
+          <p className="mt-2 text-slate-500">
+            Manage employees, issue meal stubs, rewards, and monitor activity.
+          </p>
+        </div>
+        <DashboardStats />
+        <AddEmployeeForm />
+        <div className="grid gap-6 xl:grid-cols-2">
+          <WeeklyStubForm />
+          <RewardStubForm />
+        </div>
+        <EmployeeTable />
+        <IssueHistoryTable />
+      </main>
+    </>
+  );
+}
