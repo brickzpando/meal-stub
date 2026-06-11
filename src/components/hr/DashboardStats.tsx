@@ -1,47 +1,35 @@
 "use client";
-import { useMealStub } from "@/context/MealStubContext";
+import { useDashboardStats } from "@/hooks/dashboard/useDashboardStats";
 import { Users, CalendarDays, Gift, ShoppingCart } from "lucide-react";
 
 export default function DashboardStats() {
-  const { employees, transactions } = useMealStub();
-
-  const weeklyIssued = transactions
-    .filter((x) => x.type === "weekly")
-    .reduce((a, b) => a + b.amount, 0);
-
-  const rewardsIssued = transactions
-    .filter((x) => x.type === "reward")
-    .reduce((a, b) => a + b.amount, 0);
-
-  const purchases = transactions
-    .filter((x) => x.type === "purchase")
-    .reduce((a, b) => a + b.amount, 0);
+  const { data } = useDashboardStats();
 
   const stats = [
     {
       title: "Employees",
-      value: employees.length.toLocaleString(),
+      value: data?.employeesCount ?? 0,
       icon: Users,
       bg: "bg-blue-100",
       color: "text-blue-600",
     },
     {
       title: "Weekly Issued",
-      value: `₱${weeklyIssued.toLocaleString()}`,
+      value: `₱${data?.weeklyIssued ?? 0}`,
       icon: CalendarDays,
       bg: "bg-emerald-100",
       color: "text-emerald-600",
     },
     {
       title: "Rewards Issued",
-      value: `₱${rewardsIssued.toLocaleString()}`,
+      value: `₱${data?.rewardsIssued ?? 0}`,
       icon: Gift,
       bg: "bg-amber-100",
       color: "text-amber-600",
     },
     {
       title: "Purchases",
-      value: `₱${purchases.toLocaleString()}`,
+      value: `₱${data?.purchases ?? 0}`,
       icon: ShoppingCart,
       bg: "bg-rose-100",
       color: "text-rose-600",

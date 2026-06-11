@@ -1,5 +1,7 @@
-export interface Employee {
+export type Employee = {
   id: string;
-  name: string;
-  dept: string;
-}
+  fullName: string;
+  employeeNumber: string;
+  department?: string | null;
+  balance: number;
+};

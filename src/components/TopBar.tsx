@@ -1,14 +1,23 @@
 "use client";
+
 import { Button } from "@heroui/react";
 import { UtensilsCrossed, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 interface Props {
   role: string;
-  userName?: string;
-  onLogout: () => void;
 }
 
-export default function TopBar({ role, userName, onLogout }: Props) {
+export default function TopBar({ role }: Props) {
+  const router = useRouter();
+  const { logout, user } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   return (
     <header className="sticky top-0 z-50 mb-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex h-16 items-center justify-between px-6">
@@ -22,8 +31,10 @@ export default function TopBar({ role, userName, onLogout }: Props) {
               Meal Stub Tracker
             </h1>
 
-            {userName && (
-              <p className="text-sm text-slate-500">Welcome, {userName}</p>
+            {user?.employee?.fullName && (
+              <p className="text-sm text-slate-500">
+                Welcome, {user?.employee?.fullName}
+              </p>
             )}
           </div>
         </div>
@@ -32,7 +43,8 @@ export default function TopBar({ role, userName, onLogout }: Props) {
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-700">
             {role}
           </span>
-          <Button onClick={onLogout} variant="danger">
+
+          <Button onClick={handleLogout} variant="danger">
             <LogOut className="h-4 w-4" />
             Logout
           </Button>

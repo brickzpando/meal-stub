@@ -141,7 +141,7 @@ export default function LoginForm() {
         </div>
         <div className="space-y-4">
           <Input
-            className="w-full"
+            className="w-full border border-slate-300"
             placeholder={role === "employee" ? "EMP-001" : "Enter PIN"}
             value={value}
             onChange={(e) => setValue(e.target.value)}

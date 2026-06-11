@@ -1,19 +1,17 @@
 "use client";
 import { useState } from "react";
-import { Employee } from "@/types/employee";
-import { useMealStub } from "@/context/MealStubContext";
-
 import { UserPlus, User, Building2, BadgeInfo } from "lucide-react";
 import { Button, InputGroup } from "@heroui/react";
+import { useCreateEmployee } from "@/hooks/employees/useEmployeeMutations";
 
 export default function AddEmployeeForm() {
-  const { employees, setEmployees } = useMealStub();
-
   const [name, setName] = useState("");
 
   const [dept, setDept] = useState("");
 
   const [empId, setEmpId] = useState("");
+
+  const { mutate: createEmployee } = useCreateEmployee();
 
   const addEmployee = () => {
     if (!name.trim()) {
@@ -21,27 +19,28 @@ export default function AddEmployeeForm() {
       return;
     }
 
-    const exists = employees.find(
-      (e) => e.name.toLowerCase() === name.toLowerCase(),
+    createEmployee(
+      {
+        fullName: name,
+        department: dept,
+        employeeNumber: empId || undefined,
+      },
+      {
+        onSuccess: () => {
+          setName("");
+          setDept("");
+          setEmpId("");
+          alert("Employee added");
+        },
+        onError: (err: unknown) => {
+          if (err instanceof Error) {
+            alert(err.message);
+          } else {
+            alert("Failed to add employee");
+          }
+        },
+      },
     );
-
-    if (exists) {
-      alert("Employee already exists");
-      return;
-    }
-
-    const employee: Employee = {
-      id:
-        empId.trim() || `EMP-${String(employees.length + 1).padStart(3, "0")}`,
-      name,
-      dept,
-    };
-
-    setEmployees([...employees, employee]);
-
-    setName("");
-    setDept("");
-    setEmpId("");
   };
 
   return (
