@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { MealStubProvider } from "@/context/MealStubContext";
 import { AuthProvider } from "@/context/AuthContext";
+import Providers from "./providers";
+import { ToastProvider } from "@heroui/react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +23,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <MealStubProvider>{children}</MealStubProvider>
+          <Providers>
+            <ToastProvider placement="top end" />
+            {children}
+          </Providers>
         </AuthProvider>
       </body>
     </html>

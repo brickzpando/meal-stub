@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useMealStub } from "@/context/MealStubContext";
-import { currentWeek, today } from "@/lib/helpers";
+import { toast } from "@heroui/react";
+import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
+import { useIssueRewardStub } from "@/hooks/transactions/useIssueRewardStub";
 import {
   Button,
   ComboBox,
@@ -13,49 +14,65 @@ import {
 import { Gift, PhilippinePeso, FileText, Award } from "lucide-react";
 
 export default function RewardStubForm() {
-  const { transactions, setTransactions, employees } = useMealStub();
-
   const [employeeId, setEmployeeId] = useState("");
-
   const [amount, setAmount] = useState(100);
-
   const [reason, setReason] = useState("");
 
-  const issueReward = () => {
+  const { data: employees = [] } = useEmployeesBasic();
+
+  const { mutate: issueReward, isPending } = useIssueRewardStub();
+
+  const handleSubmit = () => {
     if (!employeeId) {
-      alert("Select employee");
+      toast.warning("No employee selected", {
+        description: "Please select an employee.",
+      });
+      return;
+    }
+
+    if (!reason.trim()) {
+      toast.warning("Missing reward reason", {
+        description: "Please provide a reward reason.",
+      });
       return;
     }
 
     if (amount <= 0) {
-      alert("Invalid amount");
+      toast.warning("Invalid amount", {
+        description: "Reward amount must be greater than zero.",
+      });
       return;
     }
 
-    const transaction = {
-      id: crypto.randomUUID(),
-      empId: employeeId,
-      type: "reward" as const,
-      stubType: "reward" as const,
-      amount,
-      date: today(),
-      week: currentWeek(),
-      note: reason,
-    };
+    issueReward(
+      {
+        employeeId,
+        amount,
+        reason,
+      },
+      {
+        onSuccess: () => {
+          setEmployeeId("");
+          setAmount(100);
+          setReason("");
 
-    setTransactions([...transactions, transaction]);
+          toast.success("Reward issued", {
+            description: `₱${amount} reward successfully granted.`,
+          });
+        },
 
-    setEmployeeId("");
-
-    setAmount(100);
-
-    setReason("");
-
-    alert("Reward issued");
+        onError: (err) => {
+          toast.danger("Failed to issue reward", {
+            description:
+              err instanceof Error ? err.message : "Something went wrong.",
+          });
+        },
+      },
+    );
   };
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {/* HEADER */}
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100">
           <Gift className="h-5 w-5 text-emerald-600" />
@@ -65,9 +82,8 @@ export default function RewardStubForm() {
           <h3 className="text-lg font-semibold text-slate-900">
             Reward Stub Issuance
           </h3>
-
           <p className="text-sm text-slate-500">
-            Issue reward credits for achievements and incentives.
+            Issue reward credits for achievements.
           </p>
         </div>
       </div>
@@ -81,7 +97,6 @@ export default function RewardStubForm() {
           <ComboBox
             selectedKey={employeeId}
             onSelectionChange={(key) => setEmployeeId(String(key))}
-            className="w-full"
           >
             <ComboBox.InputGroup>
               <Input className="border border-gray-300" />
@@ -91,10 +106,12 @@ export default function RewardStubForm() {
             <ComboBox.Popover>
               <ListBox className="max-h-48">
                 {employees.map((emp) => (
-                  <ListBox.Item key={emp.id} id={emp.id} textValue={emp.name}>
-                    {emp.name}
-
-                    <ListBox.ItemIndicator />
+                  <ListBox.Item
+                    key={emp.id}
+                    id={emp.id}
+                    textValue={emp.fullName}
+                  >
+                    {emp.fullName}
                   </ListBox.Item>
                 ))}
               </ListBox>
@@ -107,14 +124,13 @@ export default function RewardStubForm() {
             <PhilippinePeso className="h-4 w-4" />
             Reward Amount
           </label>
+
           <Input
             type="number"
-            className="border border-gray-300"
             min={1}
-            value={amount === 0 ? "" : String(amount)}
-            onChange={(e) =>
-              setAmount(e.target.value === "" ? 0 : Number(e.target.value))
-            }
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+            className="border border-gray-300"
           />
         </div>
 
@@ -125,16 +141,18 @@ export default function RewardStubForm() {
           </label>
 
           <TextArea
-            className="w-full border border-gray-300"
             rows={4}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
+            className="w-full border border-gray-300"
           />
         </div>
+
         <Button
           size="lg"
           className="w-full rounded-md bg-emerald-600 text-white hover:bg-emerald-700"
-          onPress={issueReward}
+          onPress={handleSubmit}
+          isDisabled={isPending}
         >
           <Award className="h-4 w-4" />
           Grant Reward
