@@ -1,65 +1,68 @@
 "use client";
 import { useState } from "react";
 import { User, Ticket, Coins } from "lucide-react";
-import { useMealStub } from "@/context/MealStubContext";
-import { Button, ComboBox, Input, Label, ListBox, Select } from "@heroui/react";
-import { currentWeek, today } from "@/lib/helpers";
-import { wkBal, rwBal, totalBal } from "@/lib/balance";
+import {
+  Button,
+  ComboBox,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  toast,
+} from "@heroui/react";
+import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
+import { useCreatePurchase } from "@/hooks/transactions/useCreatePurchase";
 
 export default function PurchaseForm() {
-  const { transactions, setTransactions, employees } = useMealStub();
+  const { data: employees = [] } = useEmployeesBasic();
+  const createPurchase = useCreatePurchase();
 
   const [employeeId, setEmployeeId] = useState("");
 
   const [amount, setAmount] = useState(50);
 
-  const selectedEmployee = employees.find((emp) => emp.id === employeeId);
-
   const [stubType, setStubType] = useState<"weekly" | "reward">("weekly");
 
-  const week = currentWeek();
+  const selectedEmployee = employees.find((emp) => emp.id === employeeId);
 
-  const selectedEmployeeBalance = selectedEmployee
-    ? totalBal(selectedEmployee.id, week, transactions)
-    : 0;
-  const purchase = () => {
+  const selectedEmployeeBalance = selectedEmployee?.balance ?? 0;
+
+  const purchase = async () => {
     if (!employeeId) {
-      alert("Select employee");
-      return;
+      return toast.warning("Please select an employee");
     }
-
-    const balance =
-      stubType === "weekly"
-        ? wkBal(employeeId, week, transactions)
-        : rwBal(employeeId, transactions);
 
     if (amount <= 0) {
-      alert("Invalid amount");
-      return;
+      return toast.warning("Invalid amount");
     }
 
-    if (amount > balance) {
-      alert("Insufficient balance");
-      return;
+    const employee = employees.find((e) => e.id === employeeId);
+
+    if (!employee) {
+      return toast.danger("Employee not found");
     }
 
-    setTransactions([
-      ...transactions,
-      {
-        id: crypto.randomUUID(),
-        empId: employeeId,
-        type: "purchase",
-        stubType,
+    if (employee.balance <= 0) {
+      return toast.danger("Cannot purchase: employee has zero balance");
+    }
+
+    if (amount > employee.balance) {
+      return toast.warning("Insufficient balance");
+    }
+
+    try {
+      await createPurchase.mutateAsync({
+        employeeId,
         amount,
-        date: today(),
-        week,
-        note: "Pantry Purchase",
-      },
-    ]);
+      });
 
-    alert("Purchase completed");
+      alert("Purchase completed");
 
-    setAmount(50);
+      setAmount(50);
+    } catch (err) {
+      console.error(err);
+      alert("Purchase failed");
+    }
   };
 
   return (
@@ -88,10 +91,10 @@ export default function PurchaseForm() {
           </ComboBox.InputGroup>
 
           <ComboBox.Popover>
-            <ListBox className="max-h-48">
+            <ListBox className="max-h-48 overflow-y-auto">
               {employees.map((emp) => (
-                <ListBox.Item key={emp.id} id={emp.id} textValue={emp.name}>
-                  {emp.name} - ₱{totalBal(emp.id, week, transactions)}
+                <ListBox.Item key={emp.id} id={emp.id} textValue={emp.fullName}>
+                  {emp.fullName}
                   <ListBox.ItemIndicator />
                 </ListBox.Item>
               ))}
@@ -102,7 +105,7 @@ export default function PurchaseForm() {
           <div className="rounded-md bg-slate-50 border border-slate-200 p-3">
             <p className="text-sm text-slate-600">
               Employee:{" "}
-              <span className="font-medium">{selectedEmployee.name}</span>
+              <span className="font-medium">{selectedEmployee.fullName}</span>
             </p>
 
             <p className="text-sm text-green-700 font-semibold">

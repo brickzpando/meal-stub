@@ -1,31 +1,33 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useMealStub } from "@/context/MealStubContext";
 import { Chip, InputGroup, Pagination, Table } from "@heroui/react";
 import { Receipt, Search } from "lucide-react";
+import { useTransactions } from "@/hooks/transactions/useTransactions";
 
 export default function EmployeeHistory() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
-  const { transactions } = useMealStub();
+  const { data: transactions = [] } = useTransactions();
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
   const [search, setSearch] = useState("");
 
-  const rowsPerPage = 10;
-
   const history = transactions
-    .filter((t) => t.empId === user?.employee?.id)
+    .filter((t) => t.employeeId === user?.employee?.id)
     .slice()
     .reverse();
 
   const filteredHistory = history.filter(
     (item) =>
       item.type.toLowerCase().includes(search.toLowerCase()) ||
-      item.note?.toLowerCase().includes(search.toLowerCase()) ||
-      item.date.toLowerCase().includes(search.toLowerCase()),
+      (item.remarks ?? "").toLowerCase().includes(search.toLowerCase()),
   );
-
+  const rowsPerPage = 10;
   const pages = Math.ceil(filteredHistory.length / rowsPerPage);
 
   const paginatedItems = useMemo(() => {
@@ -34,10 +36,7 @@ export default function EmployeeHistory() {
     return filteredHistory.slice(start, start + rowsPerPage);
   }, [filteredHistory, page]);
 
-  if (!user?.employee) {
-    return null;
-  }
-
+  if (!mounted) return null;
   if (!user?.employee) {
     return null;
   }
@@ -114,14 +113,16 @@ export default function EmployeeHistory() {
             >
               {paginatedItems.map((item) => (
                 <Table.Row key={item.id} id={item.id}>
-                  <Table.Cell>{item.date}</Table.Cell>
+                  <Table.Cell>
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </Table.Cell>
 
                   <Table.Cell>
                     <Chip
                       className={
-                        item.type === "weekly"
+                        item.type === "WEEKLY"
                           ? "bg-emerald-100 text-emerald-700"
-                          : item.type === "reward"
+                          : item.type === "REWARD"
                             ? "bg-amber-100 text-amber-700"
                             : "bg-rose-100 text-rose-700"
                       }
@@ -132,7 +133,7 @@ export default function EmployeeHistory() {
 
                   <Table.Cell>₱{item.amount.toLocaleString()}</Table.Cell>
 
-                  <Table.Cell>{item.note || "-"}</Table.Cell>
+                  <Table.Cell>{item.remarks || "-"}</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
@@ -183,91 +184,6 @@ export default function EmployeeHistory() {
           </Pagination>
         </div>
       )}
-
-      {/* <div className="overflow-x-auto">
-        <table className="w-full min-w-[700px]">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Date
-              </th>
-
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Type
-              </th>
-
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Amount
-              </th>
-
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Note
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredHistory.length ===
-            0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="py-10 text-center text-sm text-slate-500"
-                >
-                  No transactions found.
-                </td>
-              </tr>
-            ) : (
-              filteredHistory.map(
-                (
-                  item
-                ) => (
-                  <tr
-                    key={
-                      item.id
-                    }
-                    className="border-b border-slate-100 hover:bg-slate-50"
-                  >
-                    <td className="px-4 py-4 text-slate-700">
-                      {
-                        item.date
-                      }
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          item.type ===
-                          "weekly"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : item.type ===
-                              "reward"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-rose-100 text-rose-700"
-                        }`}
-                      >
-                        {
-                          item.type
-                        }
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-4 text-right font-semibold text-slate-900">
-                      ₱
-                      {item.amount.toLocaleString()}
-                    </td>
-
-                    <td className="px-4 py-4 text-slate-600">
-                      {item.note ||
-                        "-"}
-                    </td>
-                  </tr>
-                )
-              )
-            )}
-          </tbody>
-        </table>
-      </div> */}
     </div>
   );
 }

@@ -42,8 +42,17 @@ export async function createEmployee(data: {
 
 export async function getEmployees() {
   const employees = await prisma.employee.findMany({
-    include: {
-      transactions: true,
+    select: {
+      id: true,
+      fullName: true,
+      employeeNumber: true,
+      department: true,
+
+      transactions: {
+        select: {
+          amount: true,
+        },
+      },
     },
   });
 

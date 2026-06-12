@@ -4,6 +4,7 @@ import { Button } from "@heroui/react";
 import { UtensilsCrossed, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from "react";
 
 interface Props {
   role: string;
@@ -12,6 +13,13 @@ interface Props {
 export default function TopBar({ role }: Props) {
   const router = useRouter();
   const { logout, user } = useAuth();
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -31,9 +39,9 @@ export default function TopBar({ role }: Props) {
               Meal Stub Tracker
             </h1>
 
-            {user?.employee?.fullName && (
+            {mounted && user?.employee?.fullName && (
               <p className="text-sm text-slate-500">
-                Welcome, {user?.employee?.fullName}
+                Welcome, {user.employee.fullName}
               </p>
             )}
           </div>

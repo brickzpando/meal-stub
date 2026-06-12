@@ -66,7 +66,7 @@ export default function WeeklyStubForm() {
           </ComboBox.InputGroup>
 
           <ComboBox.Popover>
-            <ListBox className="max-h-48">
+            <ListBox className="max-h-48 overflow-y-auto">
               {employees.map((emp) => (
                 <ListBox.Item key={emp.id} id={emp.id} textValue={emp.fullName}>
                   {emp.fullName}

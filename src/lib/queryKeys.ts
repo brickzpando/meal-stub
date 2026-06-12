@@ -8,4 +8,5 @@ export const queryKeys = {
   weeklySummary: ["weekly-summary"] as const,
   settlementReport: ["settlement-report"] as const,
   transactionReport: ["transaction-report"] as const,
+  purchaseTransactions: ["purchase-transactions"] as const,
 };

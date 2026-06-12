@@ -12,7 +12,6 @@ import {
 
 export default function EmployeeSummary() {
   const { user } = useAuth();
-
   const { data: employees = [] } = useEmployeesBasic();
 
   if (!user?.employee) return null;
@@ -23,14 +22,13 @@ export default function EmployeeSummary() {
 
   if (!employee) return null;
 
-  const totalBalance = employee.balance || 0;
+  const weeklyBalance = employee.weekly ?? 0;
+  const rewardBalance = employee.reward ?? 0;
+  const spent = employee.spent ?? 0;
 
-  // since wala kay transaction breakdown, fallback nalang
-  const weeklyBalance = totalBalance * 0.6;
-  const rewardBalance = totalBalance * 0.4;
+  const totalBalance = weeklyBalance + rewardBalance;
 
-  const issued = totalBalance; // approximation
-  const spent = 0; // wala kay transaction source
+  const issued = weeklyBalance + rewardBalance;
 
   const cards = [
     {
@@ -55,13 +53,6 @@ export default function EmployeeSummary() {
       color: "text-blue-600",
     },
     {
-      title: "Total Issued",
-      value: issued,
-      icon: Wallet,
-      bg: "bg-cyan-100",
-      color: "text-cyan-600",
-    },
-    {
       title: "Total Used",
       value: spent,
       icon: ShoppingBag,
@@ -81,7 +72,7 @@ export default function EmployeeSummary() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => {
           const Icon = card.icon;
 

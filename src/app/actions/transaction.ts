@@ -17,6 +17,15 @@ export async function issueWeeklyStub(employeeId: string) {
     },
   });
 
+  await prisma.employee.update({
+    where: { id: employeeId },
+    data: {
+      balance: {
+        increment: 100,
+      },
+    },
+  });
+
   revalidatePath("/hr");
 
   return {
@@ -46,7 +55,13 @@ export async function getEmployeesBasic() {
 
   return employees.map((emp) => {
     const total = emp.transactions.reduce((sum, t) => {
-      return sum + Number(t.amount);
+      const amount = Number(t.amount);
+
+      if (t.type === "PURCHASE") {
+        return sum - amount; // 🔥 IMPORTANT FIX
+      }
+
+      return sum + amount;
     }, 0);
 
     const weekly = emp.transactions
@@ -111,6 +126,15 @@ export async function issueRewardStub(
     },
   });
 
+  await prisma.employee.update({
+    where: { id: employeeId },
+    data: {
+      balance: {
+        increment: amount,
+      },
+    },
+  });
+
   revalidatePath("/hr");
 
   return {
@@ -124,13 +148,61 @@ export async function issueRewardStub(
 }
 
 export async function getTransactions() {
-  return await prisma.transaction.findMany({
+  const transactions = await prisma.transaction.findMany({
     select: {
       id: true,
       employeeId: true,
       amount: true,
       type: true,
       createdAt: true,
+      remarks: true,
     },
   });
+
+  return transactions.map((t) => ({
+    id: t.id,
+    employeeId: t.employeeId,
+    amount: Number(t.amount), // ✅ FIX HERE
+    type: t.type,
+    createdAt: t.createdAt.toISOString(), // ✅ also fix this
+    remarks: t.remarks,
+  }));
+}
+
+export async function createPurchase(data: {
+  employeeId: string;
+  amount: number;
+}) {
+  const { employeeId, amount } = data;
+
+  if (!employeeId) throw new Error("Employee required");
+  if (amount <= 0) throw new Error("Invalid amount");
+
+  const transaction = await prisma.transaction.create({
+    data: {
+      employeeId,
+      amount,
+      type: "PURCHASE",
+      remarks: "Pantry Purchase",
+    },
+  });
+
+  await prisma.employee.update({
+    where: { id: employeeId },
+    data: {
+      balance: {
+        decrement: amount,
+      },
+    },
+  });
+
+  revalidatePath("/pantry");
+
+  return {
+    id: transaction.id,
+    employeeId: transaction.employeeId,
+    amount: Number(transaction.amount),
+    type: transaction.type,
+    createdAt: transaction.createdAt.toISOString(),
+  };
 }

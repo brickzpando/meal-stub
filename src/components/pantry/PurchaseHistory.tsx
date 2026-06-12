@@ -2,29 +2,37 @@
 import { Table, Chip, InputGroup, Pagination } from "@heroui/react";
 import { useMemo, useState } from "react";
 import { Search, ShoppingCart } from "lucide-react";
-import { useMealStub } from "@/context/MealStubContext";
+import { useEmployees } from "@/hooks/employees/useEmployees";
+import { usePurchaseTransactions } from "@/hooks/transactions/usePurchaseTransactions";
 
 export default function PurchaseHistory() {
-  const { employees, transactions } = useMealStub();
+  const { data: employees = [] } = useEmployees();
+  const { data: transactions = [] } = usePurchaseTransactions();
   const [page, setPage] = useState(1);
-
-  const rowsPerPage = 10;
   const [search, setSearch] = useState("");
+  const rowsPerPage = 10;
 
-  const purchases = transactions.filter((t) => t.type === "purchase");
+  const employeeMap = useMemo(() => {
+    return Object.fromEntries(employees.map((e) => [e.id, e.fullName]));
+  }, [employees]);
 
-  const employeeName = (id: string) =>
-    employees.find((e) => e.id === id)?.name || "Unknown";
+  const purchases = useMemo(() => {
+    return transactions.filter((t) => t.type === "PURCHASE");
+  }, [transactions]);
 
-  const filteredPurchases = purchases.filter((purchase) => {
-    const employee = employeeName(purchase.empId);
+  const filteredPurchases = useMemo(() => {
+    return purchases.filter((purchase) => {
+      const employee = employeeMap[purchase.employeeId] || "Unknown";
 
-    return (
-      employee.toLowerCase().includes(search.toLowerCase()) ||
-      purchase.date.toLowerCase().includes(search.toLowerCase()) ||
-      purchase.stubType.toLowerCase().includes(search.toLowerCase())
-    );
-  });
+      return (
+        employee.toLowerCase().includes(search.toLowerCase()) ||
+        new Date(purchase.createdAt)
+          .toLocaleDateString("en-PH")
+          .includes(search.toLowerCase()) ||
+        (purchase.remarks ?? "").toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [purchases, search, employeeMap]);
 
   const pages = Math.ceil(filteredPurchases.length / rowsPerPage);
 
@@ -70,7 +78,7 @@ export default function PurchaseHistory() {
           </InputGroup>
         </div>
       </div>
-
+      {/* <div className="min-h-100 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"> */}
       <Table>
         <Table.ScrollContainer>
           <Table.Content aria-label="Purchase History">
@@ -107,29 +115,37 @@ export default function PurchaseHistory() {
             >
               {paginatedItems.map((purchase) => (
                 <Table.Row key={purchase.id} id={purchase.id}>
-                  <Table.Cell>{purchase.date}</Table.Cell>
+                  <Table.Cell>
+                    {new Date(purchase.createdAt).toLocaleDateString("en-PH")}
+                  </Table.Cell>
 
-                  <Table.Cell>{employeeName(purchase.empId)}</Table.Cell>
+                  <Table.Cell>
+                    {employeeMap[purchase.employeeId] || "Unknown"}
+                  </Table.Cell>
 
                   <Table.Cell>
                     <Chip
                       className={
-                        purchase.stubType === "weekly"
+                        purchase.type === "WEEKLY"
                           ? "bg-blue-100 text-blue-700"
-                          : "bg-amber-100 text-amber-700"
+                          : purchase.type === "REWARD"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-rose-100 text-rose-700"
                       }
                     >
-                      <Chip.Label>{purchase.stubType}</Chip.Label>
+                      <Chip.Label>{purchase.type}</Chip.Label>
                     </Chip>
                   </Table.Cell>
-
-                  <Table.Cell>₱{purchase.amount.toLocaleString()}</Table.Cell>
+                  <Table.Cell>
+                    ₱{Number(purchase.amount).toLocaleString()}
+                  </Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
           </Table.Content>
         </Table.ScrollContainer>
       </Table>
+      {/* </div> */}
       {pages > 1 && (
         <div className="mt-4">
           <Pagination className="justify-center">

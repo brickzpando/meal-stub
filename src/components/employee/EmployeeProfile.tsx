@@ -1,14 +1,22 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import { User, BadgeInfo, Building2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function EmployeeProfile() {
   const { user } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   if (!user?.employee) {
     return null;
   }
-
   const employee = user.employee;
 
   return (
