@@ -27,6 +27,20 @@ enum TransactionType {
   PURCHASE
 }
 
+model User {
+  id        String   @id @default(cuid())
+
+  role      UserRole @unique
+  pin       String
+
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
 model Employee {
   id              String   @id @default(cuid())
 
@@ -37,7 +51,7 @@ model Employee {
 
   department      String?
   position        String?
-  balance         String
+  balance Decimal @db.Decimal(10,2) @default(0.00)
   transactions    Transaction[]
 
   isActive        Boolean  @default(true)

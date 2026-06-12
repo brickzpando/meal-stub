@@ -6,13 +6,16 @@ import { useAuth } from "@/context/AuthContext";
 import { Shield, UtensilsCrossed, UserCog, User } from "lucide-react";
 import { seedData } from "@/lib/seed";
 import { Button, Input } from "@heroui/react";
+import { usePins } from "@/hooks/admin/usePins";
+import { useEmployees } from "@/hooks/employees/useEmployees";
 
 type Role = "hr" | "pantry" | "admin" | "employee";
 
 export default function LoginForm() {
   const router = useRouter();
 
-  const { employees, pins } = useMealStub();
+  const { data: employees = [], isLoading: employeesLoading } = useEmployees();
+  const { data: pins, isLoading: pinsLoading } = usePins();
 
   const { login } = useAuth();
 
@@ -64,7 +67,7 @@ export default function LoginForm() {
 
     if (role === "employee") {
       const employee = employees.find(
-        (e) => e.id.toLowerCase() === value.toLowerCase(),
+        (e) => e.employeeNumber?.toLowerCase() === value.trim().toLowerCase(),
       );
 
       if (!employee) {
@@ -79,6 +82,10 @@ export default function LoginForm() {
 
       router.push("/employee");
 
+      return;
+    }
+    if (!pins) {
+      setError("Loading PIN configuration...");
       return;
     }
 
@@ -157,6 +164,7 @@ export default function LoginForm() {
             variant="primary"
             className="w-full h-11 bg-blue-600  text-white rounded-md hover:bg-blue-700"
             onClick={handleLogin}
+            isDisabled={employeesLoading || pinsLoading}
           >
             Login
           </Button>

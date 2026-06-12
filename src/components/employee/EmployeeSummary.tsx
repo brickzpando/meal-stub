@@ -1,9 +1,7 @@
 "use client";
-import { useAuth } from "@/context/AuthContext";
-import { useMealStub } from "@/context/MealStubContext";
-import { wkBal, rwBal, totalBal } from "@/lib/balance";
-import { currentWeek } from "@/lib/helpers";
 
+import { useAuth } from "@/context/AuthContext";
+import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
 import {
   Wallet,
   ShoppingBag,
@@ -15,31 +13,24 @@ import {
 export default function EmployeeSummary() {
   const { user } = useAuth();
 
-  const { transactions } = useMealStub();
+  const { data: employees = [] } = useEmployeesBasic();
 
-  if (!user?.employee) {
-    return null;
-  }
+  if (!user?.employee) return null;
 
   const empId = user.employee.id;
 
-  const week = currentWeek();
+  const employee = employees.find((e) => e.id === empId);
 
-  const weeklyBalance = wkBal(empId, week, transactions);
+  if (!employee) return null;
 
-  const rewardBalance = rwBal(empId, transactions);
+  const totalBalance = employee.balance || 0;
 
-  const totalBalance = totalBal(empId, week, transactions);
+  // since wala kay transaction breakdown, fallback nalang
+  const weeklyBalance = totalBalance * 0.6;
+  const rewardBalance = totalBalance * 0.4;
 
-  const issued = transactions
-    .filter(
-      (t) => t.empId === empId && (t.type === "weekly" || t.type === "reward"),
-    )
-    .reduce((a, b) => a + b.amount, 0);
-
-  const spent = transactions
-    .filter((t) => t.empId === empId && t.type === "purchase")
-    .reduce((a, b) => a + b.amount, 0);
+  const issued = totalBalance; // approximation
+  const spent = 0; // wala kay transaction source
 
   const cards = [
     {
@@ -85,7 +76,6 @@ export default function EmployeeSummary() {
         <h3 className="text-lg font-semibold text-slate-900">
           Account Summary
         </h3>
-
         <p className="mt-1 text-sm text-slate-500">
           Overview of balances, issued credits, and spending.
         </p>

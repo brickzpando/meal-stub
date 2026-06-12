@@ -25,7 +25,7 @@ export default function EmployeeProfile() {
         </div>
 
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600">
-          {employee.name.charAt(0).toUpperCase()}
+          {employee.fullName.charAt(0).toUpperCase()}
         </div>
       </div>
 
@@ -36,7 +36,9 @@ export default function EmployeeProfile() {
             <span className="text-sm">Employee ID</span>
           </div>
 
-          <p className="font-semibold text-slate-900">{employee.id}</p>
+          <p className="font-semibold text-slate-900">
+            {employee.employeeNumber}
+          </p>
         </div>
 
         <div className="rounded-xl bg-slate-50 p-4">
@@ -45,7 +47,7 @@ export default function EmployeeProfile() {
             <span className="text-sm">Full Name</span>
           </div>
 
-          <p className="font-semibold text-slate-900">{employee.name}</p>
+          <p className="font-semibold text-slate-900">{employee.fullName}</p>
         </div>
 
         <div className="rounded-xl bg-slate-50 p-4">
@@ -54,7 +56,7 @@ export default function EmployeeProfile() {
             <span className="text-sm">Department</span>
           </div>
 
-          <p className="font-semibold text-slate-900">{employee.dept}</p>
+          <p className="font-semibold text-slate-900">{employee.department}</p>
         </div>
       </div>
     </div>

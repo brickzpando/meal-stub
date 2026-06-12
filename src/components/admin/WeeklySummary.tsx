@@ -1,39 +1,14 @@
 "use client";
 import { useMemo, useState } from "react";
 import { Pagination, Table } from "@heroui/react";
-import { useMealStub } from "@/context/MealStubContext";
 import { CalendarDays } from "lucide-react";
+import { useWeeklySummary } from "@/hooks/admin/useWeeklySummary";
 
 export default function WeeklySummary() {
-  const { transactions } = useMealStub();
+  const { data: weeklyData = [] } = useWeeklySummary();
   const [page, setPage] = useState(1);
 
   const rowsPerPage = 10;
-
-  const grouped = transactions.reduce(
-    (acc, tx) => {
-      if (!acc[tx.week]) {
-        acc[tx.week] = {
-          weekly: 0,
-          reward: 0,
-          purchase: 0,
-        };
-      }
-
-      acc[tx.week][tx.type] += tx.amount;
-
-      return acc;
-    },
-    {} as Record<
-      string,
-      {
-        weekly: number;
-        reward: number;
-        purchase: number;
-      }
-    >,
-  );
-  const weeklyData = Object.entries(grouped).reverse();
 
   const pages = Math.ceil(weeklyData.length / rowsPerPage);
 
@@ -187,74 +162,6 @@ export default function WeeklySummary() {
           </Pagination>
         </div>
       )}
-      {/* <div className="overflow-x-auto">
-        <table className="w-full min-w-150">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Week
-              </th>
-
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Weekly Credit
-              </th>
-
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Reward Credit
-              </th>
-
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Purchases
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {Object.entries(
-              grouped
-            ).length === 0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="py-8 text-center text-sm text-slate-500"
-                >
-                  No weekly data available.
-                </td>
-              </tr>
-            ) : (
-              Object.entries(
-                grouped
-              ).map(
-                ([week, data]) => (
-                  <tr
-                    key={week}
-                    className="border-b border-slate-100 transition hover:bg-slate-50"
-                  >
-                    <td className="px-4 py-4 font-medium text-slate-900">
-                      {week}
-                    </td>
-
-                    <td className="px-4 py-4 text-right font-medium text-emerald-600">
-                      ₱
-                      {data.weekly.toLocaleString()}
-                    </td>
-
-                    <td className="px-4 py-4 text-right font-medium text-blue-600">
-                      ₱
-                      {data.reward.toLocaleString()}
-                    </td>
-
-                    <td className="px-4 py-4 text-right font-medium text-rose-600">
-                      ₱
-                      {data.purchase.toLocaleString()}
-                    </td>
-                  </tr>
-                )
-              )
-            )}
-          </tbody>
-        </table>
-      </div> */}
     </div>
   );
 }

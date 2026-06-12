@@ -30,12 +30,45 @@ export async function issueWeeklyStub(employeeId: string) {
 }
 
 export async function getEmployeesBasic() {
-  return prisma.employee.findMany({
+  const employees = await prisma.employee.findMany({
     select: {
       id: true,
       fullName: true,
+      transactions: {
+        select: {
+          amount: true,
+          type: true,
+        },
+      },
     },
     orderBy: { fullName: "asc" },
+  });
+
+  return employees.map((emp) => {
+    const total = emp.transactions.reduce((sum, t) => {
+      return sum + Number(t.amount);
+    }, 0);
+
+    const weekly = emp.transactions
+      .filter((t) => t.type === "WEEKLY")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const reward = emp.transactions
+      .filter((t) => t.type === "REWARD")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const spent = emp.transactions
+      .filter((t) => t.type === "PURCHASE")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    return {
+      id: emp.id,
+      fullName: emp.fullName,
+      balance: total,
+      weekly,
+      reward,
+      spent,
+    };
   });
 }
 
@@ -88,4 +121,16 @@ export async function issueRewardStub(
     remarks: transaction.remarks,
     createdAt: transaction.createdAt.toISOString(),
   };
+}
+
+export async function getTransactions() {
+  return await prisma.transaction.findMany({
+    select: {
+      id: true,
+      employeeId: true,
+      amount: true,
+      type: true,
+      createdAt: true,
+    },
+  });
 }

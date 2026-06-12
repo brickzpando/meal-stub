@@ -1,80 +1,135 @@
 "use client";
-import { useMealStub } from "@/context/MealStubContext";
+import { useState } from "react";
 import { Database, Download, Upload, FileSpreadsheet } from "lucide-react";
 import { Button } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
+import { useSystemStats } from "@/hooks/admin/useSystemStats";
+import { useEmployees } from "@/hooks/employees/useEmployees";
+import { exportEmployeesExcel, importEmployees } from "@/app/actions/employee";
 
 export default function DataManagement() {
-  const { employees, setEmployees, transactions, pins } = useMealStub();
+  const queryClient = useQueryClient();
 
-  const importCsv = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const { data: employees = [] } = useEmployees();
+
+  const { data: stats } = useSystemStats();
+
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleImportCsv = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
 
     if (!file) return;
 
-    const text = await file.text();
+    try {
+      setIsImporting(true);
 
-    const rows = text.split("\n");
+      const text = await file.text();
 
-    const imported = rows
-      .slice(1)
-      .map((row) => {
-        const [id, name, dept] = row.split(",");
+      const rows = text.split("\n");
 
-        return {
-          id: id?.trim(),
-          name: name?.trim(),
-          dept: dept?.trim(),
-        };
-      })
-      .filter((x) => x.id);
+      const imported = rows
+        .slice(1)
+        .map((row) => {
+          const [employeeId, fullName, department] = row.split(",");
 
-    setEmployees([...employees, ...imported]);
+          return {
+            employeeId: employeeId?.trim(),
+            fullName: fullName?.trim(),
+            department: department?.trim(),
+          };
+        })
+        .filter((x) => x.employeeId);
+
+      if (imported.length === 0) {
+        alert("No valid employee records found.");
+        return;
+      }
+
+      await importEmployees(imported);
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.employees,
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["system-stats"],
+      });
+
+      alert(`${imported.length} employee(s) imported successfully.`);
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to import employees.");
+    } finally {
+      setIsImporting(false);
+
+      event.target.value = "";
+    }
   };
 
-  const exportBackup = () => {
-    const backup = {
-      employees,
-      transactions,
-      pins,
-    };
+  // const handleExportBackup = async () => {
+  //   try {
+  //     setIsExporting(true);
 
-    const blob = new Blob([JSON.stringify(backup, null, 2)], {
-      type: "application/json",
-    });
+  //     const backup = await exportBackup();
 
-    const url = URL.createObjectURL(blob);
+  //     const blob = new Blob([JSON.stringify(backup, null, 2)], {
+  //       type: "application/json",
+  //     });
 
-    const a = document.createElement("a");
+  //     const url = URL.createObjectURL(blob);
 
-    a.href = url;
-    a.download = "mealstub-backup.json";
+  //     const a = document.createElement("a");
 
-    a.click();
+  //     a.href = url;
+  //     a.download = `mealstub-backup-${
+  //       new Date().toISOString().split("T")[0]
+  //     }.json`;
 
-    URL.revokeObjectURL(url);
+  //     a.click();
+
+  //     URL.revokeObjectURL(url);
+  //   } catch (error) {
+  //     console.error(error);
+
+  //     alert("Failed to export backup.");
+  //   } finally {
+  //     setIsExporting(false);
+  //   }
+  // };
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExporting(true);
+
+      const buffer = await exportEmployeesExcel();
+
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `employees-${new Date().toISOString().split("T")[0]}.xlsx`;
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to export Excel");
+    } finally {
+      setIsExporting(false);
+    }
   };
-
-  const restoreBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    const text = await file.text();
-
-    const data = JSON.parse(text);
-
-    localStorage.setItem("mst-emp", JSON.stringify(data.employees));
-
-    localStorage.setItem("mst-tx", JSON.stringify(data.transactions));
-
-    localStorage.setItem("mst-pins", JSON.stringify(data.pins));
-
-    window.location.reload();
-  };
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
           <Database className="h-5 w-5 text-blue-600" />
@@ -86,12 +141,12 @@ export default function DataManagement() {
           </h3>
 
           <p className="text-sm text-slate-500">
-            Import employees, export backups, and restore system data.
+            Import employees and export database backups.
           </p>
         </div>
       </div>
 
-      {/* Import CSV */}
+      {/* IMPORT */}
       <div className="mb-6">
         <div className="mb-3 flex items-center gap-2">
           <FileSpreadsheet className="h-4 w-4 text-blue-600" />
@@ -103,56 +158,47 @@ export default function DataManagement() {
           <Upload className="mb-3 h-8 w-8 text-slate-400 group-hover:text-blue-500" />
 
           <span className="text-sm font-medium text-slate-700">
-            Upload Employee CSV
+            {isImporting ? "Importing..." : "Upload Employee CSV"}
           </span>
 
           <span className="mt-1 text-xs text-slate-500">
-            Supported format: .csv
+            Format: employeeId, fullName, department
           </span>
 
           <input
             type="file"
             accept=".csv"
-            onChange={importCsv}
+            onChange={handleImportCsv}
+            disabled={isImporting}
             className="hidden"
           />
         </label>
       </div>
 
-      {/* Backup & Restore */}
+      {/* EXPORT */}
       <div className="mb-6">
         <div className="mb-3 flex items-center gap-2">
           <Database className="h-4 w-4 text-emerald-600" />
 
-          <h4 className="font-medium text-slate-800">Backup & Restore</h4>
+          <h4 className="font-medium text-slate-800">Database Backup</h4>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button onPress={exportBackup} className="bg-emerald-600 text-white">
-            <Download className="h-4 w-4" />
-            Export Backup
-          </Button>
-
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
-            <Upload className="h-4 w-4" />
-            Restore Backup
-            <input
-              type="file"
-              accept=".json"
-              onChange={restoreBackup}
-              className="hidden"
-            />
-          </label>
-        </div>
+        <Button
+          onPress={handleExportExcel}
+          className="bg-emerald-600 text-white"
+        >
+          <Download className="h-4 w-4" />
+          Export Backup
+        </Button>
       </div>
 
-      {/* Stats */}
+      {/* STATS */}
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="text-xs text-slate-500">Employees</p>
 
           <p className="mt-1 text-2xl font-bold text-slate-900">
-            {employees.length}
+            {stats?.employeeCount ?? employees.length}
           </p>
         </div>
 
@@ -160,15 +206,16 @@ export default function DataManagement() {
           <p className="text-xs text-slate-500">Transactions</p>
 
           <p className="mt-1 text-2xl font-bold text-slate-900">
-            {transactions.length}
+            {stats?.transactionCount ?? 0}
           </p>
         </div>
 
         <div className="rounded-xl bg-slate-50 p-4">
-          <p className="text-xs text-slate-500">PIN Records</p>
+          <p className="text-xs text-slate-500">Pin Records</p>
 
           <p className="mt-1 text-2xl font-bold text-slate-900">
-            {Object.keys(pins || {}).length}
+            {" "}
+            {stats?.pinCount ?? 0}
           </p>
         </div>
       </div>
