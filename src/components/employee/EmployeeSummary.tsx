@@ -26,7 +26,7 @@ export default function EmployeeSummary() {
   const rewardBalance = employee.reward ?? 0;
   const spent = employee.spent ?? 0;
 
-  const totalBalance = weeklyBalance + rewardBalance;
+  const totalBalance = employee.balance ?? 0;
 
   const issued = weeklyBalance + rewardBalance;
 

@@ -15,8 +15,8 @@ export default function SettlementReport() {
 
   const filteredEmployees = employees.filter(
     (emp) =>
-      emp.name.toLowerCase().includes(search.toLowerCase()) ||
-      emp.id.toLowerCase().includes(search.toLowerCase()),
+      emp.name?.toLowerCase().includes(search.toLowerCase()) ||
+      emp.id?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const pages = Math.ceil(filteredEmployees.length / rowsPerPage);

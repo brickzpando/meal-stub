@@ -7,17 +7,18 @@ import { useTransactionReport } from "@/hooks/admin/useTransactionReport";
 export default function TransactionReport() {
   const { data: transactions = [] } = useTransactionReport();
   const [search, setSearch] = useState("");
-
-  const filteredTransactions = transactions.filter((tx) => {
+  const filteredTransactions = useMemo(() => {
     const keyword = search.toLowerCase();
 
-    return (
-      tx.employeeName.toLowerCase().includes(keyword) ||
-      tx.type.toLowerCase().includes(keyword) ||
-      tx.remarks?.toLowerCase().includes(keyword) ||
-      tx.date.toLowerCase().includes(keyword)
-    );
-  });
+    return transactions.filter((tx) => {
+      return (
+        tx.employeeName?.toLowerCase().includes(keyword) ||
+        tx.type?.toLowerCase().includes(keyword) ||
+        tx.remarks?.toLowerCase().includes(keyword) ||
+        tx.date?.toLowerCase().includes(keyword)
+      );
+    });
+  }, [transactions, search]);
 
   const [page, setPage] = useState(1);
 
@@ -135,7 +136,9 @@ export default function TransactionReport() {
                           ? "bg-emerald-100 text-emerald-700"
                           : tx.type === "REWARD"
                             ? "bg-blue-100 text-blue-700"
-                            : "bg-rose-100 text-rose-700"
+                            : tx.type === "ADJUSTMENT"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-rose-100 text-rose-700"
                       }
                     >
                       <Chip.Label>{tx.type}</Chip.Label>

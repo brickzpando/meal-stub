@@ -18,8 +18,14 @@ export async function getSettlementReport() {
   });
 
   return employees.map((employee) => {
+    // const issued = employee.transactions
+    //   .filter((t) => t.type === "WEEKLY" || t.type === "REWARD")
+    //   .reduce((sum, t) => sum + Number(t.amount), 0);
     const issued = employee.transactions
-      .filter((t) => t.type === "WEEKLY" || t.type === "REWARD")
+      .filter(
+        (t) =>
+          t.type === "WEEKLY" || t.type === "REWARD" || t.type === "ADJUSTMENT",
+      )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const used = employee.transactions

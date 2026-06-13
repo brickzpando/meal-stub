@@ -1,8 +1,17 @@
 "use client";
 import { useState } from "react";
 import { UserPlus, User, Building2, BadgeInfo } from "lucide-react";
-import { Button, InputGroup } from "@heroui/react";
+import {
+  Button,
+  Input,
+  InputGroup,
+  Label,
+  toast,
+  ComboBox,
+  ListBox,
+} from "@heroui/react";
 import { useCreateEmployee } from "@/hooks/employees/useEmployeeMutations";
+import { departments } from "@/lib/departments";
 
 export default function AddEmployeeForm() {
   const [name, setName] = useState("");
@@ -15,7 +24,7 @@ export default function AddEmployeeForm() {
 
   const addEmployee = () => {
     if (!name.trim()) {
-      alert("Name required");
+      toast.warning("Name is required");
       return;
     }
 
@@ -30,13 +39,13 @@ export default function AddEmployeeForm() {
           setName("");
           setDept("");
           setEmpId("");
-          alert("Employee added");
+          toast.success("Employee added successfully");
         },
         onError: (err: unknown) => {
           if (err instanceof Error) {
-            alert(err.message);
+            toast.danger(err.message);
           } else {
-            alert("Failed to add employee");
+            toast.danger("Failed to add employee");
           }
         },
       },
@@ -76,18 +85,30 @@ export default function AddEmployeeForm() {
         </div>
 
         <div className="relative">
-          <InputGroup className="border border-slate-300 w-full">
-            <InputGroup.Prefix>
-              <Building2 className=" h-4 w-4 text-slate-400" />
-            </InputGroup.Prefix>
-            <InputGroup.Input
-              type="text"
-              placeholder="Department"
-              value={dept}
-              className=""
-              onChange={(e) => setDept(e.target.value)}
-            />
-          </InputGroup>
+          <ComboBox
+            selectedKey={dept}
+            onSelectionChange={(key) => setDept(String(key))}
+          >
+            <ComboBox.InputGroup>
+              <Input
+                placeholder="Select department"
+                className="border border-gray-300"
+                value={dept}
+                readOnly
+              />
+              <ComboBox.Trigger />
+            </ComboBox.InputGroup>
+
+            <ComboBox.Popover>
+              <ListBox className="max-h-48 overflow-y-auto">
+                {departments.map((d) => (
+                  <ListBox.Item key={d} id={d} textValue={d}>
+                    {d}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </ComboBox.Popover>
+          </ComboBox>
         </div>
 
         <div className="relative">

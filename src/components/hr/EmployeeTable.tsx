@@ -2,8 +2,16 @@
 
 import { useMemo, useState } from "react";
 
-import { Users, Search, Trash2 } from "lucide-react";
-import { Button, Chip, InputGroup, Pagination, Table } from "@heroui/react";
+import { Users, Search, Trash2, Rocket } from "lucide-react";
+import {
+  Button,
+  Chip,
+  InputGroup,
+  Pagination,
+  Table,
+  Modal,
+  toast,
+} from "@heroui/react";
 import { useEmployees } from "@/hooks/employees/useEmployees";
 import { useDeleteEmployee } from "@/hooks/employees/useEmployeeMutations";
 
@@ -11,14 +19,38 @@ export default function EmployeeTable() {
   const { data: employees = [] } = useEmployees();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const { mutate: deleteEmp } = useDeleteEmployee();
+  const { mutate: deleteEmpAsync, isPending } = useDeleteEmployee();
   const rowsPerPage = 10;
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedName, setSelectedName] = useState("");
 
-  const removeEmployee = async (id: string) => {
-    const ok = confirm("Remove employee?");
-    if (!ok) return;
+  const openDeleteModal = (id: string, name: string) => {
+    setSelectedId(id);
+    setSelectedName(name);
+    setIsOpen(true);
+  };
 
-    deleteEmp(id);
+  const handleDelete = async () => {
+    if (!selectedId) return;
+
+    try {
+      await deleteEmpAsync(selectedId);
+
+      setIsOpen(false);
+      setSelectedId(null);
+      setSelectedName("");
+
+      toast.success("Employee deleted successfully", {
+        description: `${selectedName} has been removed.`,
+      });
+    } catch (error) {
+      console.error(error);
+
+      toast.danger("Failed to delete employee", {
+        description: "An error occurred while deleting employee.",
+      });
+    }
   };
 
   const filtered = employees.filter((e) =>
@@ -58,6 +90,11 @@ export default function EmployeeTable() {
     },
   ];
 
+  const closeModal = () => {
+    setIsOpen(false);
+    setSelectedId(null);
+    setSelectedName("");
+  };
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {/* HEADER */}
@@ -124,8 +161,9 @@ export default function EmployeeTable() {
 
                 <Table.Cell>
                   <Button
+                    size="sm"
                     variant="danger-soft"
-                    onClick={() => removeEmployee(emp.id)}
+                    onClick={() => openDeleteModal(emp.id, emp.fullName)}
                   >
                     <Trash2 className="h-4 w-4" />
                     Delete
@@ -169,6 +207,55 @@ export default function EmployeeTable() {
           </Pagination>
         </div>
       )}
+      <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-[360px]">
+              <Modal.CloseTrigger />
+
+              <Modal.Header>
+                <Modal.Icon className="bg-red-100 text-red-600">
+                  <Rocket className="size-5" />
+                </Modal.Icon>
+
+                <Modal.Heading>Delete Employee</Modal.Heading>
+              </Modal.Header>
+
+              <Modal.Body>
+                <p className="text-sm text-slate-600">
+                  Are you sure you want to delete:
+                </p>
+
+                <p className="mt-2 font-semibold text-slate-900">
+                  {selectedName}
+                </p>
+
+                <p className="mt-2 text-xs text-red-500">
+                  This action cannot be undone.
+                </p>
+              </Modal.Body>
+
+              <Modal.Footer className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onPress={closeModal}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  className="w-full bg-red-600 text-white"
+                  onPress={handleDelete}
+                  isPending={isPending}
+                >
+                  {isPending ? "Deleting..." : "Delete"}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   );
 }

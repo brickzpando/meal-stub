@@ -1,7 +1,11 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEmployee, deleteEmployee } from "@/app/actions/employee";
+import {
+  createEmployee,
+  deleteEmployee,
+  updateEmployee,
+} from "@/app/actions/employee";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function useCreateEmployee() {
@@ -12,6 +16,14 @@ export function useCreateEmployee() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.employees,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["employees-basic"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["employees-basic"],
       });
     },
   });
@@ -25,6 +37,25 @@ export function useDeleteEmployee() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.employees,
+      });
+    },
+  });
+}
+
+export function useUpdateEmployee() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateEmployee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.employees,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.transactionReport,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.settlementReport,
       });
     },
   });

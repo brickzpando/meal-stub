@@ -25,6 +25,7 @@ enum TransactionType {
   WEEKLY
   REWARD
   PURCHASE
+  ADJUSTMENT
 }
 
 model User {

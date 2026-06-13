@@ -21,8 +21,6 @@ export default function PurchaseForm() {
 
   const [amount, setAmount] = useState(50);
 
-  const [stubType, setStubType] = useState<"weekly" | "reward">("weekly");
-
   const selectedEmployee = employees.find((emp) => emp.id === employeeId);
 
   const selectedEmployeeBalance = selectedEmployee?.balance ?? 0;
@@ -113,7 +111,7 @@ export default function PurchaseForm() {
             </p>
           </div>
         )}
-        <div>
+        {/* <div>
           <Select
             selectedKey={stubType}
             onSelectionChange={(key) => setStubType(key as "weekly" | "reward")}
@@ -143,7 +141,7 @@ export default function PurchaseForm() {
               </ListBox>
             </Select.Popover>
           </Select>
-        </div>
+        </div> */}
 
         <div>
           <Label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">

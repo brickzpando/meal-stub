@@ -35,7 +35,7 @@ export default function DataManagement() {
       const imported = rows
         .slice(1)
         .map((row) => {
-          const [employeeId, fullName, department] = row.split(",");
+          const [employeeId, fullName, department] = row.split(/,(.+)/);
 
           return {
             employeeId: employeeId?.trim(),

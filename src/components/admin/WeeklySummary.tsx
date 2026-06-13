@@ -29,7 +29,7 @@ export default function WeeklySummary() {
       label: "WEEKLY CREDIT",
     },
     {
-      key: "reward credit",
+      key: "reward_credit",
       label: "REWARD CREDIT",
     },
     {

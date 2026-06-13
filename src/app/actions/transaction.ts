@@ -43,6 +43,8 @@ export async function getEmployeesBasic() {
     select: {
       id: true,
       fullName: true,
+      balance: true, // 🔥 SOURCE OF TRUTH
+
       transactions: {
         select: {
           amount: true,
@@ -54,16 +56,6 @@ export async function getEmployeesBasic() {
   });
 
   return employees.map((emp) => {
-    const total = emp.transactions.reduce((sum, t) => {
-      const amount = Number(t.amount);
-
-      if (t.type === "PURCHASE") {
-        return sum - amount; // 🔥 IMPORTANT FIX
-      }
-
-      return sum + amount;
-    }, 0);
-
     const weekly = emp.transactions
       .filter((t) => t.type === "WEEKLY")
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -76,16 +68,77 @@ export async function getEmployeesBasic() {
       .filter((t) => t.type === "PURCHASE")
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
+    // 🔥 ADJUSTMENT SUPPORT (IMPORTANT)
+    const adjustment = emp.transactions
+      .filter((t) => t.type === "ADJUSTMENT")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
     return {
       id: emp.id,
       fullName: emp.fullName,
-      balance: total,
+
+      // 🔥 FINAL TRUE BALANCE (DB VALUE)
+      balance: Number(emp.balance),
+
+      // UI breakdown only
       weekly,
       reward,
       spent,
+
+      // optional (for audit display if needed)
+      adjustment,
     };
   });
 }
+
+// export async function getEmployeesBasic() {
+//   const employees = await prisma.employee.findMany({
+//     select: {
+//       id: true,
+//       fullName: true,
+//       transactions: {
+//         select: {
+//           amount: true,
+//           type: true,
+//         },
+//       },
+//     },
+//     orderBy: { fullName: "asc" },
+//   });
+
+//   return employees.map((emp) => {
+//     const total = emp.transactions.reduce((sum, t) => {
+//       const amount = Number(t.amount);
+
+//       if (t.type === "PURCHASE") {
+//         return sum - amount; // 🔥 IMPORTANT FIX
+//       }
+
+//       return sum + amount;
+//     }, 0);
+
+//     const weekly = emp.transactions
+//       .filter((t) => t.type === "WEEKLY")
+//       .reduce((sum, t) => sum + Number(t.amount), 0);
+
+//     const reward = emp.transactions
+//       .filter((t) => t.type === "REWARD")
+//       .reduce((sum, t) => sum + Number(t.amount), 0);
+
+//     const spent = emp.transactions
+//       .filter((t) => t.type === "PURCHASE")
+//       .reduce((sum, t) => sum + Number(t.amount), 0);
+
+//     return {
+//       id: emp.id,
+//       fullName: emp.fullName,
+//       balance: total,
+//       weekly,
+//       reward,
+//       spent,
+//     };
+//   });
+// }
 
 export async function getIssuanceHistory() {
   const transactions = await prisma.transaction.findMany({
