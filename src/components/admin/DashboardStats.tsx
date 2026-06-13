@@ -1,14 +1,43 @@
 "use client";
-import { useMealStub } from "@/context/MealStubContext";
-import { getDashboardStats } from "@/lib/dashboardStats";
+import { useAdminDashboardStats } from "@/hooks/admin/useAdminDashboardStats";
+import { Users, CalendarDays, Gift, ShoppingCart } from "lucide-react";
 
 export default function DashboardStats() {
-  const { employees, transactions } = useMealStub();
+  const { data } = useAdminDashboardStats();
 
-  const stats = getDashboardStats(employees, transactions);
+  const stats = [
+    {
+      title: "Employees",
+      value: data?.employeesCount ?? 0,
+      icon: Users,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+    },
+    {
+      title: "Weekly Issued",
+      value: `₱${data?.weeklyIssued ?? 0}`,
+      icon: CalendarDays,
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
+    },
+    {
+      title: "Rewards",
+      value: `₱${data?.rewardsIssued ?? 0}`,
+      icon: Gift,
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-600",
+    },
+    {
+      title: "Purchases",
+      value: `₱${data?.purchases ?? 0}`,
+      icon: ShoppingCart,
+      iconBg: "bg-rose-100",
+      iconColor: "text-rose-600",
+    },
+  ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => {
         const Icon = stat.icon;
 

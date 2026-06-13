@@ -1,34 +1,24 @@
 "use client";
 import { useMemo } from "react";
 import { Chip, InputGroup, Pagination, Table } from "@heroui/react";
-import { useMealStub } from "@/context/MealStubContext";
 import { useState } from "react";
 import { Receipt, Search } from "lucide-react";
+import { useTransactionReport } from "@/hooks/admin/useTransactionReport";
 export default function TransactionReport() {
-  const { employees, transactions } = useMealStub();
+  const { data: transactions = [] } = useTransactionReport();
   const [search, setSearch] = useState("");
+  const filteredTransactions = useMemo(() => {
+    const keyword = search.toLowerCase();
 
-  const nameOf = (id: string) =>
-    employees.find((e) => e.id === id)?.name || "Unknown";
-
-  const filteredTransactions = transactions
-    .slice()
-    .reverse()
-    .filter((tx) => {
-      const employee = employees.find((e) => e.id === tx.empId);
-      if (!employee) return false;
-
-      const employeeName = employee.name.toLowerCase();
-
-      const keyword = search.toLowerCase();
-
+    return transactions.filter((tx) => {
       return (
-        employeeName.includes(keyword) ||
-        tx.type.toLowerCase().includes(keyword) ||
-        tx.note?.toLowerCase().includes(keyword) ||
-        tx.date.toLowerCase().includes(keyword)
+        tx.employeeName?.toLowerCase().includes(keyword) ||
+        tx.type?.toLowerCase().includes(keyword) ||
+        tx.remarks?.toLowerCase().includes(keyword) ||
+        tx.date?.toLowerCase().includes(keyword)
       );
     });
+  }, [transactions, search]);
 
   const [page, setPage] = useState(1);
 
@@ -137,16 +127,18 @@ export default function TransactionReport() {
                 <Table.Row key={tx.id} id={tx.id}>
                   <Table.Cell>{tx.date}</Table.Cell>
 
-                  <Table.Cell>{nameOf(tx.empId)}</Table.Cell>
+                  <Table.Cell>{tx.employeeName}</Table.Cell>
 
                   <Table.Cell>
                     <Chip
                       className={
-                        tx.type === "weekly"
+                        tx.type === "WEEKLY"
                           ? "bg-emerald-100 text-emerald-700"
-                          : tx.type === "reward"
+                          : tx.type === "REWARD"
                             ? "bg-blue-100 text-blue-700"
-                            : "bg-rose-100 text-rose-700"
+                            : tx.type === "ADJUSTMENT"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-rose-100 text-rose-700"
                       }
                     >
                       <Chip.Label>{tx.type}</Chip.Label>
@@ -155,7 +147,7 @@ export default function TransactionReport() {
 
                   <Table.Cell>₱{tx.amount.toLocaleString()}</Table.Cell>
 
-                  <Table.Cell>{tx.note || "-"}</Table.Cell>
+                  <Table.Cell>{tx.remarks || "-"}</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>

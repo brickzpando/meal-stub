@@ -1,9 +1,7 @@
 "use client";
-import { useAuth } from "@/context/AuthContext";
-import { useMealStub } from "@/context/MealStubContext";
-import { wkBal, rwBal, totalBal } from "@/lib/balance";
-import { currentWeek } from "@/lib/helpers";
 
+import { useAuth } from "@/context/AuthContext";
+import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
 import {
   Wallet,
   ShoppingBag,
@@ -14,32 +12,23 @@ import {
 
 export default function EmployeeSummary() {
   const { user } = useAuth();
+  const { data: employees = [] } = useEmployeesBasic();
 
-  const { transactions } = useMealStub();
-
-  if (!user?.employee) {
-    return null;
-  }
+  if (!user?.employee) return null;
 
   const empId = user.employee.id;
 
-  const week = currentWeek();
+  const employee = employees.find((e) => e.id === empId);
 
-  const weeklyBalance = wkBal(empId, week, transactions);
+  if (!employee) return null;
 
-  const rewardBalance = rwBal(empId, transactions);
+  const weeklyBalance = employee.weekly ?? 0;
+  const rewardBalance = employee.reward ?? 0;
+  const spent = employee.spent ?? 0;
 
-  const totalBalance = totalBal(empId, week, transactions);
+  const totalBalance = employee.balance ?? 0;
 
-  const issued = transactions
-    .filter(
-      (t) => t.empId === empId && (t.type === "weekly" || t.type === "reward"),
-    )
-    .reduce((a, b) => a + b.amount, 0);
-
-  const spent = transactions
-    .filter((t) => t.empId === empId && t.type === "purchase")
-    .reduce((a, b) => a + b.amount, 0);
+  const issued = weeklyBalance + rewardBalance;
 
   const cards = [
     {
@@ -64,13 +53,6 @@ export default function EmployeeSummary() {
       color: "text-blue-600",
     },
     {
-      title: "Total Issued",
-      value: issued,
-      icon: Wallet,
-      bg: "bg-cyan-100",
-      color: "text-cyan-600",
-    },
-    {
       title: "Total Used",
       value: spent,
       icon: ShoppingBag,
@@ -85,13 +67,12 @@ export default function EmployeeSummary() {
         <h3 className="text-lg font-semibold text-slate-900">
           Account Summary
         </h3>
-
         <p className="mt-1 text-sm text-slate-500">
           Overview of balances, issued credits, and spending.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => {
           const Icon = card.icon;
 

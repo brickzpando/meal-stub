@@ -1,15 +1,11 @@
 "use client";
-
 import { useMemo, useState } from "react";
-
-import { useMealStub } from "@/context/MealStubContext";
-
 import { InputGroup, Pagination, Table } from "@heroui/react";
-
 import { Search, Wallet } from "lucide-react";
+import { useSettlementReport } from "@/hooks/admin/useSettlementReport";
 
 export default function SettlementReport() {
-  const { employees, transactions } = useMealStub();
+  const { data: employees = [] } = useSettlementReport();
 
   const [search, setSearch] = useState("");
 
@@ -19,8 +15,8 @@ export default function SettlementReport() {
 
   const filteredEmployees = employees.filter(
     (emp) =>
-      emp.name.toLowerCase().includes(search.toLowerCase()) ||
-      emp.id.toLowerCase().includes(search.toLowerCase()),
+      emp.name?.toLowerCase().includes(search.toLowerCase()) ||
+      emp.id?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const pages = Math.ceil(filteredEmployees.length / rowsPerPage);
@@ -120,49 +116,33 @@ export default function SettlementReport() {
                 </div>
               )}
             >
-              {paginatedEmployees.map((emp) => {
-                const issued = transactions
-                  .filter(
-                    (t) =>
-                      t.empId === emp.id &&
-                      (t.type === "weekly" || t.type === "reward"),
-                  )
-                  .reduce((a, b) => a + b.amount, 0);
+              {paginatedEmployees.map((emp) => (
+                <Table.Row key={emp.id} id={emp.id}>
+                  <Table.Cell>{emp.name}</Table.Cell>
 
-                const used = transactions
-                  .filter((t) => t.empId === emp.id && t.type === "purchase")
-                  .reduce((a, b) => a + b.amount, 0);
+                  <Table.Cell>
+                    <span className="font-medium text-emerald-600">
+                      ₱{emp.issued.toLocaleString()}
+                    </span>
+                  </Table.Cell>
 
-                const remaining = issued - used;
+                  <Table.Cell>
+                    <span className="font-medium text-rose-600">
+                      ₱{emp.used.toLocaleString()}
+                    </span>
+                  </Table.Cell>
 
-                return (
-                  <Table.Row key={emp.id} id={emp.id}>
-                    <Table.Cell>{emp.name}</Table.Cell>
-
-                    <Table.Cell>
-                      <span className="font-medium text-emerald-600">
-                        ₱{issued.toLocaleString()}
-                      </span>
-                    </Table.Cell>
-
-                    <Table.Cell>
-                      <span className="font-medium text-rose-600">
-                        ₱{used.toLocaleString()}
-                      </span>
-                    </Table.Cell>
-
-                    <Table.Cell>
-                      <span
-                        className={`font-semibold ${
-                          remaining >= 0 ? "text-blue-600" : "text-red-600"
-                        }`}
-                      >
-                        ₱{remaining.toLocaleString()}
-                      </span>
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
+                  <Table.Cell>
+                    <span
+                      className={`font-semibold ${
+                        emp.remaining >= 0 ? "text-blue-600" : "text-red-600"
+                      }`}
+                    >
+                      ₱{emp.remaining.toLocaleString()}
+                    </span>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
             </Table.Body>
           </Table.Content>
         </Table.ScrollContainer>

@@ -3,5 +3,5 @@ export type Employee = {
   fullName: string;
   employeeNumber: string;
   department?: string | null;
-  balance: number;
+  balance: number | null;
 };

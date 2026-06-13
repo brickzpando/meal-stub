@@ -6,6 +6,7 @@ import PinManagement from "@/components/admin/PinManagement";
 import SystemTools from "@/components/admin/SystemTools";
 import TopBar from "@/components/TopBar";
 import DataManagement from "@/components/admin/DataManagement";
+import EmployeeTableAdmin from "@/components/admin/EmployeeTable";
 export default function AdminPage() {
   return (
     <main className="page-container">
@@ -16,6 +17,7 @@ export default function AdminPage() {
         <DataManagement />
       </div>
       <WeeklySummary />
+      <EmployeeTableAdmin />
       <SettlementReport />
       <TransactionReport />
       <SystemTools />

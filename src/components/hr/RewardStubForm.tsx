@@ -104,7 +104,7 @@ export default function RewardStubForm() {
             </ComboBox.InputGroup>
 
             <ComboBox.Popover>
-              <ListBox className="max-h-48">
+              <ListBox className="max-h-48 overflow-y-auto">
                 {employees.map((emp) => (
                   <ListBox.Item
                     key={emp.id}

@@ -1,25 +1,12 @@
-"use client";
-import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
+import PantrySummaryCards from "@/components/pantry/PantrySummaryCards";
 import PurchaseForm from "@/components/pantry/PurchaseForm";
 import PurchaseHistory from "@/components/pantry/PurchaseHistory";
-import { useAuth } from "@/context/AuthContext";
 
 export default function PantryPage() {
-  const router = useRouter();
-
-  const { logout } = useAuth();
-
   return (
     <>
-      <TopBar
-        role="Pantry"
-        onLogout={() => {
-          logout();
-
-          router.push("/login");
-        }}
-      />
+      <TopBar role="Pantry" />
       <main className="page-container">
         <div className="flex justify-center flex-col items-center">
           <h1 className="text-3xl font-bold text-slate-800">
@@ -29,7 +16,10 @@ export default function PantryPage() {
             Process meal stub purchases and track balances
           </p>
         </div>
+
         <PurchaseForm />
+        <PantrySummaryCards />
+
         <PurchaseHistory />
       </main>
     </>
