@@ -1,10 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMealStub } from "@/context/MealStubContext";
 import { useAuth } from "@/context/AuthContext";
 import { Shield, UtensilsCrossed, UserCog, User } from "lucide-react";
-import { seedData } from "@/lib/seed";
 import { Button, Input } from "@heroui/react";
 import { usePins } from "@/hooks/admin/usePins";
 import { useEmployees } from "@/hooks/employees/useEmployees";
@@ -49,8 +47,6 @@ export default function LoginForm() {
   ];
 
   const handleLogin = () => {
-    seedData();
-
     setError("");
 
     if (!role) {
