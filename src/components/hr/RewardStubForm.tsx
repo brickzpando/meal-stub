@@ -126,6 +126,7 @@ export default function RewardStubForm() {
           </label>
           <Input
             type="number"
+            className="border border-slate-300"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
