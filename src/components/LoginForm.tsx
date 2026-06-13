@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Shield, UtensilsCrossed, UserCog, User } from "lucide-react";
@@ -22,6 +22,15 @@ export default function LoginForm() {
   const [value, setValue] = useState("");
 
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const savedRole = localStorage.getItem("lastRole") as Role | null;
+
+    if (savedRole) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRole(savedRole);
+    }
+  }, []);
 
   const roles = [
     {
@@ -76,6 +85,8 @@ export default function LoginForm() {
         employee,
       });
 
+      localStorage.setItem("lastRole", role);
+
       router.push("/employee");
 
       return;
@@ -94,6 +105,8 @@ export default function LoginForm() {
     login({
       role,
     });
+
+    localStorage.setItem("lastRole", role);
 
     router.push(`/${role}`);
   };
@@ -148,6 +161,11 @@ export default function LoginForm() {
             placeholder={role === "employee" ? "EMP-001" : "Enter PIN"}
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleLogin();
+              }
+            }}
           />
 
           {error && (
@@ -174,69 +192,4 @@ export default function LoginForm() {
       </div>
     </div>
   );
-}
-
-{
-  /* <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() =>
-                setRole("hr")
-              }
-              className={`p-3 rounded-lg border transition ${
-                role === "hr"
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white border-slate-300 hover:border-blue-500"
-              }`}
-            >
-              HR
-            </button>
-
-            <button
-              onClick={() =>
-                setRole(
-                  "pantry"
-                )
-              }
-              className={`p-3 rounded-lg border transition ${
-                role ===
-                "pantry"
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white border-slate-300 hover:border-blue-500"
-              }`}
-            >
-              Pantry
-            </button>
-
-            <button
-              onClick={() =>
-                setRole(
-                  "admin"
-                )
-              }
-              className={`p-3 rounded-lg border transition ${
-                role ===
-                "admin"
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white border-slate-300 hover:border-blue-500"
-              }`}
-            >
-              Admin
-            </button>
-
-            <button
-              onClick={() =>
-                setRole(
-                  "employee"
-                )
-              }
-              className={`p-3 rounded-lg border transition ${
-                role ===
-                "employee"
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white border-slate-300 hover:border-blue-500"
-              }`}
-            >
-              Employee
-            </button>
-          </div> */
 }

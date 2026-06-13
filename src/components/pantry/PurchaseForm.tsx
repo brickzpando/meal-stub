@@ -21,9 +21,17 @@ export default function PurchaseForm() {
 
   const [amount, setAmount] = useState(50);
 
+  const [stubType, setStubType] = useState<"WEEKLY" | "REWARD">("WEEKLY");
+
   const selectedEmployee = employees.find((emp) => emp.id === employeeId);
 
   const selectedEmployeeBalance = selectedEmployee?.balance ?? 0;
+
+  const weekly = selectedEmployee?.weekly ?? 0;
+  const reward = selectedEmployee?.reward ?? 0;
+  const total = selectedEmployee?.balance ?? 0;
+
+  const availableBalance = stubType === "WEEKLY" ? weekly : reward;
 
   const purchase = async () => {
     if (!employeeId) {
@@ -34,32 +42,40 @@ export default function PurchaseForm() {
       return toast.warning("Invalid amount");
     }
 
-    const employee = employees.find((e) => e.id === employeeId);
+    const employee = selectedEmployee;
+    // const employee = employees.find((e) => e.id === employeeId);
 
     if (!employee) {
       return toast.danger("Employee not found");
     }
 
-    if (employee.balance <= 0) {
-      return toast.danger("Cannot purchase: employee has zero balance");
+    if (availableBalance <= 0) {
+      return toast.danger(`${stubType} balance is zero`);
     }
 
-    if (amount > employee.balance) {
-      return toast.warning("Insufficient balance");
+    // if (employee.balance <= 0) {
+    //   return toast.danger("Cannot purchase: employee has zero balance");
+    // }
+
+    // if (amount > employee.balance) {
+    //   return toast.warning("Insufficient balance");
+    // }
+    if (amount > availableBalance) {
+      return toast.warning(`Insufficient ${stubType.toLowerCase()} balance`);
     }
 
     try {
       await createPurchase.mutateAsync({
         employeeId,
         amount,
+        sourceType: stubType,
       });
-
-      alert("Purchase completed");
+      toast.success("Purchase completed");
 
       setAmount(50);
     } catch (err) {
       console.error(err);
-      alert("Purchase failed");
+      toast.danger("Purchase failed");
     }
   };
 
@@ -100,21 +116,25 @@ export default function PurchaseForm() {
           </ComboBox.Popover>
         </ComboBox>
         {selectedEmployee && (
-          <div className="rounded-md bg-slate-50 border border-slate-200 p-3">
+          <div className="rounded-md bg-slate-50 border border-slate-200 p-3 flex flex-col gap-[1px]">
             <p className="text-sm text-slate-600">
               Employee:{" "}
               <span className="font-medium">{selectedEmployee.fullName}</span>
             </p>
 
+            <p className="text-sm text-blue-700 font-semibold">
+              Weekly Balance: ₱{selectedEmployee.weekly ?? 0}
+            </p>
+
             <p className="text-sm text-green-700 font-semibold">
-              Available Balance: ₱{selectedEmployeeBalance}
+              Reward Balance: ₱{selectedEmployee.reward ?? 0}
             </p>
           </div>
         )}
-        {/* <div>
+        <div>
           <Select
             selectedKey={stubType}
-            onSelectionChange={(key) => setStubType(key as "weekly" | "reward")}
+            onSelectionChange={(key) => setStubType(key as "WEEKLY" | "REWARD")}
             className="w-full "
           >
             <Label className="flex items-center gap-2 text-slate-700">
@@ -129,19 +149,19 @@ export default function PurchaseForm() {
 
             <Select.Popover>
               <ListBox>
-                <ListBox.Item id="weekly" textValue="Weekly Stub">
+                <ListBox.Item id="WEEKLY" textValue="Weekly Stub">
                   Weekly Stub
                   <ListBox.ItemIndicator />
                 </ListBox.Item>
 
-                <ListBox.Item id="reward" textValue="Reward Stub">
+                <ListBox.Item id="REWARD" textValue="Reward Stub">
                   Reward Stub
                   <ListBox.ItemIndicator />
                 </ListBox.Item>
               </ListBox>
             </Select.Popover>
           </Select>
-        </div> */}
+        </div>
 
         <div>
           <Label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">

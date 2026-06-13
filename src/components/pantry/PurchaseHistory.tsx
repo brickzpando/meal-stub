@@ -13,23 +13,35 @@ export default function PurchaseHistory() {
   const rowsPerPage = 10;
 
   const employeeMap = useMemo(() => {
-    return Object.fromEntries(employees.map((e) => [e.id, e.fullName]));
+    return Object.fromEntries(
+      employees.map((e) => [
+        e.id,
+        {
+          fullName: e.fullName,
+          employeeNumber: e.employeeNumber,
+        },
+      ]),
+    );
   }, [employees]);
-
   const purchases = useMemo(() => {
     return transactions.filter((t) => t.type === "PURCHASE");
   }, [transactions]);
-
   const filteredPurchases = useMemo(() => {
     return purchases.filter((purchase) => {
-      const employee = employeeMap[purchase.employeeId] || "Unknown";
+      const employee = employeeMap[purchase.employeeId];
+
+      const employeeName = employee?.fullName || "Unknown";
+      const employeeNumber = employee?.employeeNumber || "";
+
+      const searchLower = search.toLowerCase();
 
       return (
-        employee.toLowerCase().includes(search.toLowerCase()) ||
+        employeeName.toLowerCase().includes(searchLower) ||
+        employeeNumber.toLowerCase().includes(searchLower) ||
         new Date(purchase.createdAt)
           .toLocaleDateString("en-PH")
-          .includes(search.toLowerCase()) ||
-        (purchase.remarks ?? "").toLowerCase().includes(search.toLowerCase())
+          .includes(searchLower) ||
+        (purchase.remarks ?? "").toLowerCase().includes(searchLower)
       );
     });
   }, [purchases, search, employeeMap]);
@@ -44,7 +56,7 @@ export default function PurchaseHistory() {
       .reverse()
       .slice(start, start + rowsPerPage);
   }, [filteredPurchases, page]);
-  const columns = ["DATE", "EMPLOYEE", "STUB TYPE", "AMOUNT"];
+  const columns = ["DATE", "EMPLOYEE NUMBER", "EMPLOYEE", "AMOUNT"];
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -78,7 +90,7 @@ export default function PurchaseHistory() {
           </InputGroup>
         </div>
       </div>
-      {/* <div className="min-h-100 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"> */}
+
       <Table>
         <Table.ScrollContainer>
           <Table.Content aria-label="Purchase History">
@@ -120,22 +132,13 @@ export default function PurchaseHistory() {
                   </Table.Cell>
 
                   <Table.Cell>
-                    {employeeMap[purchase.employeeId] || "Unknown"}
+                    {employeeMap[purchase.employeeId]?.employeeNumber ||
+                      "No Number"}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {employeeMap[purchase.employeeId]?.fullName || "Unknown"}
                   </Table.Cell>
 
-                  <Table.Cell>
-                    <Chip
-                      className={
-                        purchase.type === "WEEKLY"
-                          ? "bg-blue-100 text-blue-700"
-                          : purchase.type === "REWARD"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-rose-100 text-rose-700"
-                      }
-                    >
-                      <Chip.Label>{purchase.type}</Chip.Label>
-                    </Chip>
-                  </Table.Cell>
                   <Table.Cell>
                     ₱{Number(purchase.amount).toLocaleString()}
                   </Table.Cell>

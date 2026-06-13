@@ -28,6 +28,11 @@ enum TransactionType {
   ADJUSTMENT
 }
 
+enum StubSource {
+  WEEKLY
+  REWARD
+}
+
 model User {
   id        String   @id @default(cuid())
 
@@ -75,6 +80,8 @@ model Transaction {
   type        TransactionType
 
   remarks     String?
+
+   sourceType StubSource?
 
   createdAt   DateTime @default(now())
 

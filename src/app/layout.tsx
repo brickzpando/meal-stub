@@ -4,7 +4,6 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Providers from "./providers";
 import { ToastProvider } from "@heroui/react";
-import { MealStubProvider } from "@/context/MealStubContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,10 +24,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <Providers>
-            <MealStubProvider>
-              <ToastProvider placement="top end" />
-              {children}
-            </MealStubProvider>
+            <ToastProvider placement="top end" />
+            {children}
           </Providers>
         </AuthProvider>
       </body>
