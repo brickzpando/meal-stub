@@ -1,5 +1,5 @@
 "use server";
-
+import { StubSource } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -41,7 +41,8 @@ export async function issueWeeklyStub(employeeId: string) {
     data: {
       employeeId,
       amount: 100,
-      type: "WEEKLY",
+      type: StubSource.WEEKLY,
+      sourceType: StubSource.WEEKLY,
       remarks: "Weekly Stub",
     },
   });
@@ -155,7 +156,8 @@ export async function issueRewardStub(
     data: {
       employeeId,
       amount,
-      type: "REWARD",
+      sourceType: StubSource.REWARD,
+      type: StubSource.REWARD,
       remarks: reason,
     },
   });
