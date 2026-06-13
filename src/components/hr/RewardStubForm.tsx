@@ -15,7 +15,7 @@ import { Gift, PhilippinePeso, FileText, Award } from "lucide-react";
 
 export default function RewardStubForm() {
   const [employeeId, setEmployeeId] = useState("");
-  const [amount, setAmount] = useState(100);
+  const [amount, setAmount] = useState("100");
   const [reason, setReason] = useState("");
 
   const { data: employees = [] } = useEmployeesBasic();
@@ -37,7 +37,7 @@ export default function RewardStubForm() {
       return;
     }
 
-    if (amount <= 0) {
+    if (Number(amount || 0) <= 0) {
       toast.warning("Invalid amount", {
         description: "Reward amount must be greater than zero.",
       });
@@ -47,13 +47,13 @@ export default function RewardStubForm() {
     issueReward(
       {
         employeeId,
-        amount,
+        amount: Number(amount || 0),
         reason,
       },
       {
         onSuccess: () => {
           setEmployeeId("");
-          setAmount(100);
+          setAmount("100");
           setReason("");
 
           toast.success("Reward issued", {
@@ -124,13 +124,10 @@ export default function RewardStubForm() {
             <PhilippinePeso className="h-4 w-4" />
             Reward Amount
           </label>
-
           <Input
             type="number"
-            min={1}
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            className="border border-gray-300"
+            onChange={(e) => setAmount(e.target.value)}
           />
         </div>
 
