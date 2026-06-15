@@ -14,12 +14,19 @@ export default function IssueHistoryTable() {
 
   const { data: transactions = [] } = useIssuanceHistory();
   const { data: employeeMap = {} } = useEmployeeMap();
-
   const issuance = useMemo(() => {
+    const searchTerm = search.toLowerCase();
+
     return transactions
       .filter((t) => {
-        const name = employeeMap[t.employeeId] ?? "";
-        return name.toLowerCase().includes(search.toLowerCase());
+        const employee = employeeMap[t.employeeId];
+
+        if (!employee) return false;
+
+        return (
+          employee.fullName.toLowerCase().includes(searchTerm) ||
+          (employee.employeeNumber ?? "").toLowerCase().includes(searchTerm)
+        );
       })
       .slice()
       .sort(
@@ -35,7 +42,14 @@ export default function IssueHistoryTable() {
     return issuance.slice(start, start + rowsPerPage);
   }, [issuance, page]);
 
-  const columns = ["DATE", "EMPLOYEE", "TYPE", "AMOUNT", "REASON"];
+  const columns = [
+    "DATE",
+    "EMPLOYEE NO",
+    "EMPLOYEE",
+    "TYPE",
+    "AMOUNT",
+    "REASON",
+  ];
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -91,9 +105,12 @@ export default function IssueHistoryTable() {
                 <Table.Cell>
                   {new Date(item.createdAt).toLocaleDateString()}
                 </Table.Cell>
+                <Table.Cell>
+                  {employeeMap[item.employeeId]?.employeeNumber ?? "-"}
+                </Table.Cell>
 
                 <Table.Cell>
-                  {employeeMap[item.employeeId] ?? "Unknown"}
+                  {employeeMap[item.employeeId]?.fullName ?? "Unknown"}
                 </Table.Cell>
 
                 <Table.Cell>

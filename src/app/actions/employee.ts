@@ -137,13 +137,23 @@ export async function getEmployeeMap() {
     select: {
       id: true,
       fullName: true,
+      employeeNumber: true,
     },
   });
 
-  const map: Record<string, string> = {};
+  const map: Record<
+    string,
+    {
+      fullName: string;
+      employeeNumber: string | null;
+    }
+  > = {};
 
   employees.forEach((e) => {
-    map[e.id] = e.fullName;
+    map[e.id] = {
+      fullName: e.fullName,
+      employeeNumber: e.employeeNumber,
+    };
   });
 
   return map;
