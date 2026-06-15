@@ -1,10 +1,10 @@
 "use server";
-
+import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 export async function getPurchaseTransactions() {
   const purchases = await prisma.transaction.findMany({
     where: {
-      type: "PURCHASE",
+      type: TransactionType.PURCHASE,
     },
     select: {
       id: true,

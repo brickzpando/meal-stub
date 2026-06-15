@@ -1,5 +1,5 @@
 "use server";
-
+import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function getSettlementReport() {
@@ -24,12 +24,14 @@ export async function getSettlementReport() {
     const issued = employee.transactions
       .filter(
         (t) =>
-          t.type === "WEEKLY" || t.type === "REWARD" || t.type === "ADJUSTMENT",
+          t.type === TransactionType.WEEKLY ||
+          t.type === TransactionType.REWARD ||
+          t.type === TransactionType.ADJUSTMENT,
       )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const used = employee.transactions
-      .filter((t) => t.type === "PURCHASE")
+      .filter((t) => t.type === TransactionType.PURCHASE)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     return {

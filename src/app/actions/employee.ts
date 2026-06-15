@@ -2,6 +2,8 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "../../lib/prisma";
 import ExcelJS from "exceljs";
+import { TransactionType, UserRole } from "@prisma/client";
+
 export async function createEmployee(data: {
   employeeNumber?: string;
   fullName: string;
@@ -31,7 +33,7 @@ export async function createEmployee(data: {
   const employee = await prisma.employee.create({
     data: {
       fullName,
-      role: "EMPLOYEE",
+      role: UserRole.EMPLOYEE,
       department,
       employeeNumber:
         employeeNumber ?? `EMP-${Date.now().toString().slice(-6)}`,
@@ -159,7 +161,7 @@ export async function importEmployees(
       employeeNumber: emp.employeeId, // map CSV -> DB field
       fullName: emp.fullName,
       department: emp.department,
-      role: "EMPLOYEE", // required field
+      role: UserRole.EMPLOYEE, // required field
     })),
     skipDuplicates: true,
   });
@@ -305,7 +307,7 @@ export async function updateEmployee(data: {
         data: {
           employeeId: id,
           amount: difference,
-          type: "ADJUSTMENT",
+          type: TransactionType.ADJUSTMENT,
           remarks: `Balance adjusted by admin`,
         },
       });

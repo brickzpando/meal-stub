@@ -1,5 +1,5 @@
 "use server";
-import { StubSource } from "@prisma/client";
+import { StubSource, TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -86,36 +86,41 @@ export async function getEmployeesBasic() {
   });
   return employees.map((emp) => {
     const weeklyIssued = emp.transactions
-      .filter((t) => t.type === "WEEKLY")
+      .filter((t) => t.type === TransactionType.WEEKLY)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const rewardIssued = emp.transactions
-      .filter((t) => t.type === "REWARD")
+      .filter((t) => t.type === TransactionType.REWARD)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const weeklySpent = emp.transactions
-      .filter((t) => t.type === "PURCHASE" && t.sourceType === "WEEKLY")
+      .filter(
+        (t) =>
+          t.type === TransactionType.PURCHASE &&
+          t.sourceType === StubSource.WEEKLY,
+      )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const rewardSpent = emp.transactions
-      .filter((t) => t.type === "PURCHASE" && t.sourceType === "REWARD")
+      .filter(
+        (t) =>
+          t.type === TransactionType.PURCHASE &&
+          t.sourceType === StubSource.REWARD,
+      )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const spent = weeklySpent + rewardSpent;
 
     const adjustment = emp.transactions
-      .filter((t) => t.type === "ADJUSTMENT")
+      .filter((t) => t.type === TransactionType.ADJUSTMENT)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     return {
       id: emp.id,
       fullName: emp.fullName,
-
       balance: Number(emp.balance),
-
       weekly: weeklyIssued - weeklySpent,
       reward: rewardIssued - rewardSpent,
-
       spent,
       adjustment,
     };
@@ -210,22 +215,26 @@ export async function createPurchase(data: {
   amount: number;
   sourceType: "WEEKLY" | "REWARD";
 }) {
-  const { employeeId, amount, sourceType } = data;
+  console.log("PURCHASE DATA:", data);
 
-  if (!employeeId) throw new Error("Employee required");
-  if (amount <= 0) throw new Error("Invalid amount");
+  const { employeeId, amount, sourceType } = data;
 
   const transaction = await prisma.transaction.create({
     data: {
       employeeId,
       amount,
-      type: "PURCHASE",
-      sourceType: sourceType,
+      type: TransactionType.PURCHASE,
+      sourceType,
       remarks: "Pantry Purchase",
     },
   });
 
-  await prisma.employee.update({
+  console.log("TRANSACTION CREATED:", {
+    ...transaction,
+    amount: Number(transaction.amount),
+  });
+
+  const updatedEmployee = await prisma.employee.update({
     where: { id: employeeId },
     data: {
       balance: {
@@ -234,13 +243,55 @@ export async function createPurchase(data: {
     },
   });
 
-  revalidatePath("/pantry");
+  console.log("BALANCE AFTER UPDATE:", updatedEmployee.balance);
 
+  // return transaction;
   return {
     id: transaction.id,
     employeeId: transaction.employeeId,
     amount: Number(transaction.amount),
     type: transaction.type,
+    sourceType: transaction.sourceType,
     createdAt: transaction.createdAt.toISOString(),
   };
 }
+
+// export async function createPurchase(data: {
+//   employeeId: string;
+//   amount: number;
+//   sourceType: "WEEKLY" | "REWARD";
+// }) {
+//   const { employeeId, amount, sourceType } = data;
+
+//   if (!employeeId) throw new Error("Employee required");
+//   if (amount <= 0) throw new Error("Invalid amount");
+
+//   const transaction = await prisma.transaction.create({
+//     data: {
+//       employeeId,
+//       amount,
+//       type: TransactionType.PURCHASE,
+//       sourceType: sourceType,
+//       remarks: "Pantry Purchase",
+//     },
+//   });
+
+//   await prisma.employee.update({
+//     where: { id: employeeId },
+//     data: {
+//       balance: {
+//         decrement: amount,
+//       },
+//     },
+//   });
+
+//   revalidatePath("/pantry");
+
+//   return {
+//     id: transaction.id,
+//     employeeId: transaction.employeeId,
+//     amount: Number(transaction.amount),
+//     type: transaction.type,
+//     createdAt: transaction.createdAt.toISOString(),
+//   };
+// }

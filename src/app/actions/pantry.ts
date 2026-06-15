@@ -1,12 +1,12 @@
 // app/actions/pantry.ts
 "use server";
-
+import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function getPantrySummary() {
   const transactions = await prisma.transaction.findMany({
     where: {
-      type: "PURCHASE",
+      type: TransactionType.PURCHASE,
     },
     select: {
       amount: true,
