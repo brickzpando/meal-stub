@@ -1,5 +1,5 @@
 "use server";
-
+import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function getDashboardStats() {
@@ -13,15 +13,15 @@ export async function getDashboardStats() {
   });
 
   const weeklyIssued = transactions
-    .filter((t) => t.type === "WEEKLY")
+    .filter((t) => t.type === TransactionType.WEEKLY)
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const rewardsIssued = transactions
-    .filter((t) => t.type === "REWARD")
+    .filter((t) => t.type === TransactionType.REWARD)
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const purchases = transactions
-    .filter((t) => t.type === "PURCHASE")
+    .filter((t) => t.type === TransactionType.PURCHASE)
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   return {
