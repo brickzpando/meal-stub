@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Chip, InputGroup, Pagination, Table } from "@heroui/react";
+import { Chip, InputGroup, Pagination, Skeleton, Table } from "@heroui/react";
 import { History, Search, Gift, CalendarDays } from "lucide-react";
 import { useIssuanceHistory } from "@/hooks/issuance/useIssuanceHistory";
 import { useEmployeeMap } from "@/hooks/employees/useEmployees";
@@ -12,8 +12,13 @@ export default function IssueHistoryTable() {
 
   const rowsPerPage = 10;
 
-  const { data: transactions = [] } = useIssuanceHistory();
-  const { data: employeeMap = {} } = useEmployeeMap();
+  const { data: transactions = [], isLoading: transactionsLoading } =
+    useIssuanceHistory();
+
+  const { data: employeeMap = {}, isLoading: employeeMapLoading } =
+    useEmployeeMap();
+  const isLoading = transactionsLoading || employeeMapLoading;
+
   const issuance = useMemo(() => {
     const searchTerm = search.toLowerCase();
 
@@ -50,6 +55,51 @@ export default function IssueHistoryTable() {
     "AMOUNT",
     "REASON",
   ];
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-xl" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-44 rounded-md" />
+              <Skeleton className="h-4 w-64 rounded-md" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-full rounded-md md:w-80" />
+        </div>
+
+        {/* Table */}
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          {/* Header Row */}
+          <div className="grid grid-cols-6 gap-4 border-b border-slate-200 p-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-4 w-24 rounded-md" />
+            ))}
+          </div>
+
+          {/* Rows */}
+          {Array.from({ length: 5 }).map((_, row) => (
+            <div
+              key={row}
+              className="grid grid-cols-6 gap-4 border-b border-slate-100 p-4"
+            >
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="h-4 w-24 rounded-md" />
+              <Skeleton className="h-4 w-40 rounded-md" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="h-4 w-48 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

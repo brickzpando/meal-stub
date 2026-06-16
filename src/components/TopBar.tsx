@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Skeleton } from "@heroui/react";
 import { UtensilsCrossed, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -39,9 +39,11 @@ export default function TopBar({ role }: Props) {
               Meal Stub Tracker
             </h1>
 
-            {mounted && user?.employee?.fullName && (
+            {!mounted ? (
+              <Skeleton className="h-4 w-40 rounded-md" />
+            ) : (
               <p className="text-sm text-slate-500">
-                Welcome, {user.employee.fullName}
+                Welcome, {user?.employee?.fullName ?? user?.role.toUpperCase()}
               </p>
             )}
           </div>

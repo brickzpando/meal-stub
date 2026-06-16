@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { toast } from "@heroui/react";
+import { Skeleton, toast } from "@heroui/react";
 import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
 import { useIssueRewardStub } from "@/hooks/transactions/useIssueRewardStub";
 import {
@@ -18,7 +18,7 @@ export default function RewardStubForm() {
   const [amount, setAmount] = useState("100");
   const [reason, setReason] = useState("");
 
-  const { data: employees = [] } = useEmployeesBasic();
+  const { data: employees = [], isLoading } = useEmployeesBasic();
 
   const { mutate: issueReward, isPending } = useIssueRewardStub();
 
@@ -70,6 +70,45 @@ export default function RewardStubForm() {
       },
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-48 rounded-md" />
+            <Skeleton className="h-4 w-60 rounded-md" />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {/* Employee */}
+          <div>
+            <Skeleton className="mb-2 h-4 w-20 rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+
+          {/* Amount */}
+          <div>
+            <Skeleton className="mb-2 h-4 w-32 rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+
+          {/* Reason */}
+          <div>
+            <Skeleton className="mb-2 h-4 w-36 rounded-md" />
+            <Skeleton className="h-28 w-full rounded-md" />
+          </div>
+
+          {/* Button */}
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {/* HEADER */}

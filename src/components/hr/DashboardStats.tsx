@@ -1,9 +1,10 @@
 "use client";
 import { useDashboardStats } from "@/hooks/dashboard/useDashboardStats";
+import { Skeleton } from "@heroui/react";
 import { Users, CalendarDays, Gift, ShoppingCart } from "lucide-react";
 
 export default function DashboardStats() {
-  const { data } = useDashboardStats();
+  const { data, isLoading } = useDashboardStats();
 
   const stats = [
     {
@@ -47,18 +48,34 @@ export default function DashboardStats() {
             className=" h-30 items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
           >
             <div>
-              <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+              {isLoading ? (
+                <Skeleton className="h-4 w-24 rounded-md" />
+              ) : (
+                <p className="text-sm font-medium text-slate-500">
+                  {stat.title}
+                </p>
+              )}
             </div>
 
-            <div className="flex justify-between w-full">
-              <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                {stat.value}
-              </h2>
-              <div
-                className={`flex h-14 w-14 items-center justify-center rounded-2xl ${stat.bg}`}
-              >
-                <Icon className={`h-7 w-7 ${stat.color}`} />
-              </div>
+            <div className="flex justify-between items-center w-full">
+              {isLoading ? (
+                <>
+                  <Skeleton className="mt-2 h-14 w-24 rounded-lg" />
+                  <Skeleton className="h-14 w-14 rounded-2xl" />
+                </>
+              ) : (
+                <>
+                  <h2 className="mt-2 text-3xl font-bold text-slate-900">
+                    {stat.value}
+                  </h2>
+
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl ${stat.bg}`}
+                  >
+                    <Icon className={`h-7 w-7 ${stat.color}`} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );

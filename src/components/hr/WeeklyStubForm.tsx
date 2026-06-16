@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import { CalendarDays, Send } from "lucide-react";
-import { Button, ComboBox, Input, Label, ListBox, toast } from "@heroui/react";
+import {
+  Button,
+  ComboBox,
+  Input,
+  Label,
+  ListBox,
+  Skeleton,
+  toast,
+} from "@heroui/react";
 import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
 import { useIssueWeeklyStub } from "@/hooks/transactions/issueWeeklyStub";
 
 export default function WeeklyStubForm() {
   const [employeeId, setEmployeeId] = useState("");
-
-  const { data: employees = [] } = useEmployeesBasic();
+  const { data: employees = [], isLoading } = useEmployeesBasic();
   const { mutate: issueWeekly } = useIssueWeeklyStub();
 
   const handleSubmit = () => {
@@ -35,6 +42,35 @@ export default function WeeklyStubForm() {
       },
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-48 rounded-md" />
+            <Skeleton className="h-4 w-56 rounded-md" />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-20 rounded-md" />
+
+          <Skeleton className="h-10 w-full rounded-md" />
+
+          <div className="rounded-xl border border-slate-200 p-5">
+            <Skeleton className="h-4 w-32 rounded-md" />
+            <Skeleton className="mt-3 h-10 w-24 rounded-md" />
+            <Skeleton className="mt-3 h-4 w-52 rounded-md" />
+          </div>
+
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

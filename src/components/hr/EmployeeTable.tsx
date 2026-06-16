@@ -11,12 +11,13 @@ import {
   Table,
   Modal,
   toast,
+  Skeleton,
 } from "@heroui/react";
 import { useEmployees } from "@/hooks/employees/useEmployees";
 import { useDeleteEmployee } from "@/hooks/employees/useEmployeeMutations";
 
 export default function EmployeeTable() {
-  const { data: employees = [] } = useEmployees();
+  const { data: employees = [], isLoading } = useEmployees();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const { mutate: deleteEmpAsync, isPending } = useDeleteEmployee();
@@ -95,6 +96,51 @@ export default function EmployeeTable() {
     setSelectedId(null);
     setSelectedName("");
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-xl" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-4 w-48 rounded-md" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-full rounded-md md:w-80" />
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="border-b border-slate-200 p-4">
+            <div className="grid grid-cols-5 gap-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-24 rounded-md" />
+              ))}
+            </div>
+          </div>
+
+          {Array.from({ length: 5 }).map((_, row) => (
+            <div
+              key={row}
+              className="grid grid-cols-5 gap-4 border-b border-slate-100 p-4"
+            >
+              <Skeleton className="h-4 w-40 rounded-md" />
+              <Skeleton className="h-4 w-24 rounded-md" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="h-8 w-24 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {/* HEADER */}
