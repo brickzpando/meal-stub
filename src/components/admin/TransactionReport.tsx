@@ -13,6 +13,7 @@ export default function TransactionReport() {
     return transactions.filter((tx) => {
       return (
         tx.employeeName?.toLowerCase().includes(keyword) ||
+        tx.employeeNumber?.toLowerCase().includes(keyword) ||
         tx.type?.toLowerCase().includes(keyword) ||
         tx.remarks?.toLowerCase().includes(keyword) ||
         tx.date?.toLowerCase().includes(keyword)
@@ -36,6 +37,10 @@ export default function TransactionReport() {
     {
       key: "date",
       label: "DATE",
+    },
+    {
+      key: "employeeNumber",
+      label: "EMPLOYEE NO.",
     },
     {
       key: "employee",
@@ -126,6 +131,7 @@ export default function TransactionReport() {
               {paginatedTransactions.map((tx) => (
                 <Table.Row key={tx.id} id={tx.id}>
                   <Table.Cell>{tx.date}</Table.Cell>
+                  <Table.Cell>{tx.employeeNumber ?? "-"}</Table.Cell>
 
                   <Table.Cell>{tx.employeeName}</Table.Cell>
 

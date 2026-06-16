@@ -1,17 +1,17 @@
 "use client";
 import { useState } from "react";
-import { UserPlus, User, Building2, BadgeInfo } from "lucide-react";
+import { UserPlus, User, BadgeInfo } from "lucide-react";
 import {
   Button,
   Input,
   InputGroup,
-  Label,
   toast,
   ComboBox,
   ListBox,
+  Skeleton,
 } from "@heroui/react";
 import { useCreateEmployee } from "@/hooks/employees/useEmployeeMutations";
-import { departments } from "@/lib/departments";
+import { useDepartments } from "@/hooks/employees/useDepartments";
 
 export default function AddEmployeeForm() {
   const [name, setName] = useState("");
@@ -19,7 +19,10 @@ export default function AddEmployeeForm() {
   const [dept, setDept] = useState("");
 
   const [empId, setEmpId] = useState("");
-
+  const { data: departments = [], isLoading } = useDepartments();
+  const filteredDepartments = departments.filter((d) =>
+    d.toLowerCase().includes(dept.toLowerCase()),
+  );
   const { mutate: createEmployee } = useCreateEmployee();
 
   const addEmployee = () => {
@@ -51,6 +54,28 @@ export default function AddEmployeeForm() {
       },
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32 rounded-md" />
+            <Skeleton className="h-4 w-56 rounded-md" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -94,14 +119,14 @@ export default function AddEmployeeForm() {
                 placeholder="Select department"
                 className="border border-gray-300"
                 value={dept}
-                readOnly
+                onChange={(e) => setDept(e.target.value)}
               />
               <ComboBox.Trigger />
             </ComboBox.InputGroup>
 
             <ComboBox.Popover>
               <ListBox className="max-h-48 overflow-y-auto">
-                {departments.map((d) => (
+                {filteredDepartments.map((d) => (
                   <ListBox.Item key={d} id={d} textValue={d}>
                     {d}
                   </ListBox.Item>

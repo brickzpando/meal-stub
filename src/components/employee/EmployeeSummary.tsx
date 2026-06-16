@@ -2,13 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
-import {
-  Wallet,
-  ShoppingBag,
-  CalendarDays,
-  Gift,
-  CreditCard,
-} from "lucide-react";
+import { ShoppingBag, CalendarDays, Gift, CreditCard } from "lucide-react";
 
 export default function EmployeeSummary() {
   const { user } = useAuth();
@@ -16,44 +10,39 @@ export default function EmployeeSummary() {
 
   if (!user?.employee) return null;
 
-  const empId = user.employee.id;
-
-  const employee = employees.find((e) => e.id === empId);
+  const employee = employees.find((e) => e.id === user.employee?.id);
 
   if (!employee) return null;
 
-  const weeklyBalance = employee.weekly ?? 0;
-  const rewardBalance = employee.reward ?? 0;
+  const weeklyIssued = employee.weekly ?? 0;
+  const rewardIssued = employee.reward ?? 0;
   const spent = employee.spent ?? 0;
-
-  const totalBalance = employee.balance ?? 0;
-
-  const issued = weeklyBalance + rewardBalance;
+  const balance = employee.balance ?? 0;
 
   const cards = [
     {
-      title: "Weekly Balance",
-      value: weeklyBalance,
+      title: "Weekly Issued",
+      value: weeklyIssued,
       icon: CalendarDays,
       bg: "bg-emerald-100",
       color: "text-emerald-600",
     },
     {
-      title: "Reward Balance",
-      value: rewardBalance,
+      title: "Reward Issued",
+      value: rewardIssued,
       icon: Gift,
       bg: "bg-amber-100",
       color: "text-amber-600",
     },
     {
-      title: "Total Balance",
-      value: totalBalance,
+      title: "Current Balance",
+      value: balance,
       icon: CreditCard,
       bg: "bg-blue-100",
       color: "text-blue-600",
     },
     {
-      title: "Total Used",
+      title: "Total Spent",
       value: spent,
       icon: ShoppingBag,
       bg: "bg-rose-100",
@@ -79,21 +68,16 @@ export default function EmployeeSummary() {
           return (
             <div
               key={card.title}
-              className="flex h-32.5 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-white"
+              className="flex h-32 items-center justify-between rounded-xl border bg-slate-50 p-4"
             >
               <div>
-                <p className="text-sm font-medium text-slate-500">
-                  {card.title}
-                </p>
-
-                <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                <p className="text-sm text-slate-500">{card.title}</p>
+                <h2 className="text-2xl font-bold">
                   ₱{card.value.toLocaleString()}
                 </h2>
               </div>
 
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.bg}`}
-              >
+              <div className={`p-3 rounded-xl ${card.bg}`}>
                 <Icon className={`h-6 w-6 ${card.color}`} />
               </div>
             </div>

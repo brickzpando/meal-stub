@@ -3,7 +3,76 @@ import { StubSource, TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-import { startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
+
+export async function issueWeeklyStubBulk() {
+  const now = subWeeks(new Date(), 1);
+
+  const weekStart = startOfWeek(now, {
+    weekStartsOn: 1,
+  });
+
+  const weekEnd = endOfWeek(now, {
+    weekStartsOn: 1,
+  });
+
+  const employees = await prisma.employee.findMany({
+    select: {
+      id: true,
+    },
+  });
+
+  let issued = 0;
+  let skipped = 0;
+
+  for (const employee of employees) {
+    const existingWeekly = await prisma.transaction.findFirst({
+      where: {
+        employeeId: employee.id,
+        type: TransactionType.WEEKLY,
+        createdAt: {
+          gte: weekStart,
+          lte: weekEnd,
+        },
+      },
+    });
+
+    if (existingWeekly) {
+      skipped++;
+      continue;
+    }
+
+    await prisma.transaction.create({
+      data: {
+        employeeId: employee.id,
+        amount: 100,
+        type: TransactionType.WEEKLY,
+        sourceType: StubSource.WEEKLY,
+        remarks: "Weekly Stub",
+      },
+    });
+
+    await prisma.employee.update({
+      where: {
+        id: employee.id,
+      },
+      data: {
+        balance: {
+          increment: 100,
+        },
+      },
+    });
+
+    issued++;
+  }
+
+  revalidatePath("/hr");
+
+  return {
+    issued,
+    skipped,
+  };
+}
 
 export async function issueWeeklyStub(employeeId: string) {
   if (!employeeId) {
@@ -41,7 +110,7 @@ export async function issueWeeklyStub(employeeId: string) {
     data: {
       employeeId,
       amount: 100,
-      type: StubSource.WEEKLY,
+      type: TransactionType.WEEKLY,
       sourceType: StubSource.WEEKLY,
       remarks: "Weekly Stub",
     },
@@ -73,7 +142,7 @@ export async function getEmployeesBasic() {
       id: true,
       fullName: true,
       balance: true, // 🔥 SOURCE OF TRUTH
-
+      employeeNumber: true,
       transactions: {
         select: {
           amount: true,
@@ -117,6 +186,7 @@ export async function getEmployeesBasic() {
 
     return {
       id: emp.id,
+      employeeNumber: emp.employeeNumber,
       fullName: emp.fullName,
       balance: Number(emp.balance),
       weekly: weeklyIssued - weeklySpent,
@@ -162,7 +232,7 @@ export async function issueRewardStub(
       employeeId,
       amount,
       sourceType: StubSource.REWARD,
-      type: StubSource.REWARD,
+      type: TransactionType.REWARD,
       remarks: reason,
     },
   });
@@ -215,8 +285,6 @@ export async function createPurchase(data: {
   amount: number;
   sourceType: "WEEKLY" | "REWARD";
 }) {
-  console.log("PURCHASE DATA:", data);
-
   const { employeeId, amount, sourceType } = data;
 
   const transaction = await prisma.transaction.create({
@@ -229,11 +297,6 @@ export async function createPurchase(data: {
     },
   });
 
-  console.log("TRANSACTION CREATED:", {
-    ...transaction,
-    amount: Number(transaction.amount),
-  });
-
   const updatedEmployee = await prisma.employee.update({
     where: { id: employeeId },
     data: {
@@ -242,8 +305,6 @@ export async function createPurchase(data: {
       },
     },
   });
-
-  console.log("BALANCE AFTER UPDATE:", updatedEmployee.balance);
 
   // return transaction;
   return {

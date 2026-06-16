@@ -1,13 +1,21 @@
 "use client";
 
+import { resetAllEmployeeBalances } from "@/app/actions/employee";
+import { toast } from "@heroui/react";
+
 export default function SystemTools() {
-  const resetData = () => {
-    const ok = confirm("Delete all data?");
+  const resetData = async () => {
+    const ok = confirm("Reset ALL employee balances?");
 
     if (!ok) return;
 
-    localStorage.clear();
-    window.location.reload();
+    try {
+      await resetAllEmployeeBalances();
+      toast.success("System reset successful");
+    } catch (err) {
+      console.error(err);
+      toast.danger("Reset failed");
+    }
   };
 
   return (
@@ -19,7 +27,7 @@ export default function SystemTools() {
 
       <button
         onClick={resetData}
-        className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+        className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
       >
         Reset System
       </button>

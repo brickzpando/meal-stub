@@ -51,6 +51,7 @@ export async function getTransactionReport() {
         select: {
           id: true,
           fullName: true,
+          employeeNumber: true,
         },
       },
     },
@@ -67,5 +68,6 @@ export async function getTransactionReport() {
     remarks: tx.remarks,
     employeeId: tx.employee.id,
     employeeName: tx.employee.fullName,
+    employeeNumber: tx.employee.employeeNumber,
   }));
 }

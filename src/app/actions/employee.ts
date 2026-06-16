@@ -137,13 +137,23 @@ export async function getEmployeeMap() {
     select: {
       id: true,
       fullName: true,
+      employeeNumber: true,
     },
   });
 
-  const map: Record<string, string> = {};
+  const map: Record<
+    string,
+    {
+      fullName: string;
+      employeeNumber: string | null;
+    }
+  > = {};
 
   employees.forEach((e) => {
-    map[e.id] = e.fullName;
+    map[e.id] = {
+      fullName: e.fullName,
+      employeeNumber: e.employeeNumber,
+    };
   });
 
   return map;
@@ -151,14 +161,14 @@ export async function getEmployeeMap() {
 
 export async function importEmployees(
   employees: {
-    employeeId: string;
+    employeeNumber: string;
     fullName: string;
     department: string;
   }[],
 ) {
   await prisma.employee.createMany({
     data: employees.map((emp) => ({
-      employeeNumber: emp.employeeId, // map CSV -> DB field
+      employeeNumber: emp.employeeNumber, // map CSV -> DB field
       fullName: emp.fullName,
       department: emp.department,
       role: UserRole.EMPLOYEE, // required field
@@ -321,6 +331,76 @@ export async function updateEmployee(data: {
     balance: Number(updated.balance),
   };
 }
+
+export async function getDepartments() {
+  const defaultDepartments = [
+    "HR",
+    "IT",
+    "FINANCE",
+    "SALES",
+    "OPERATIONS",
+    "BILLING",
+  ];
+
+  const employees = await prisma.employee.findMany({
+    where: {
+      department: {
+        not: null,
+      },
+    },
+    select: {
+      department: true,
+    },
+    distinct: ["department"],
+  });
+
+  const dbDepartments = employees
+    .map((e) => e.department)
+    .filter(Boolean) as string[];
+
+  return [...new Set([...defaultDepartments, ...dbDepartments])].sort();
+}
+
+export async function resetAllEmployeeBalances() {
+  const employees = await prisma.employee.findMany({
+    select: {
+      id: true,
+      balance: true,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    for (const emp of employees) {
+      const oldBalance = Number(emp.balance);
+
+      // reset balance
+      await tx.employee.update({
+        where: { id: emp.id },
+        data: {
+          balance: 0,
+        },
+      });
+
+      // audit trail
+      if (oldBalance !== 0) {
+        await tx.transaction.create({
+          data: {
+            employeeId: emp.id,
+            amount: -oldBalance,
+            type: TransactionType.ADJUSTMENT,
+            remarks: "SYSTEM RESET: balance cleared",
+          },
+        });
+      }
+    }
+  });
+
+  return {
+    success: true,
+    message: "All employee balances reset to 0",
+  };
+}
+
 // export async function updateEmployee(data: {
 //   id: string;
 //   employeeNumber?: string;

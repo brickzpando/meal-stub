@@ -20,7 +20,7 @@ import {
   useUpdateEmployee,
 } from "@/hooks/employees/useEmployeeMutations";
 import { Employee } from "@/types/employee";
-import { departments } from "@/lib/departments";
+import { useDepartments } from "@/hooks/employees/useDepartments";
 
 export default function EmployeeTableAdmin() {
   const { data: employees = [] } = useEmployees();
@@ -28,9 +28,10 @@ export default function EmployeeTableAdmin() {
   const [page, setPage] = useState(1);
   const { mutate: deleteEmp } = useDeleteEmployee();
   const rowsPerPage = 10;
-
+  const { data: departments = [] } = useDepartments();
   const { mutate: updateEmp, isPending } = useUpdateEmployee();
 
+  const [dept, setDept] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<Employee | null>(null);
 
@@ -41,7 +42,9 @@ export default function EmployeeTableAdmin() {
     department: "",
     balance: "",
   });
-
+  const filteredDepartments = departments.filter((d) =>
+    d.toLowerCase().includes(form.department.toLowerCase()),
+  );
   const removeEmployee = async (id: string) => {
     const ok = confirm("Remove employee?");
     if (!ok) return;
@@ -172,7 +175,25 @@ export default function EmployeeTableAdmin() {
             ))}
           </Table.Header>
 
-          <Table.Body>
+          <Table.Body
+            renderEmptyState={() => (
+              <div className="flex flex-col items-center gap-3 py-12">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                  <Users className="h-7 w-7 text-slate-400" />
+                </div>
+
+                <div className="text-center">
+                  <h4 className="font-semibold text-slate-700">
+                    No employees found
+                  </h4>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    No employee records match your search.
+                  </p>
+                </div>
+              </div>
+            )}
+          >
             {paginatedItems.map((emp) => (
               <Table.Row key={emp.id}>
                 <Table.Cell className="font-medium">{emp.fullName}</Table.Cell>
@@ -181,7 +202,9 @@ export default function EmployeeTableAdmin() {
 
                 <Table.Cell>
                   <Chip>
-                    <Chip.Label>{emp.department ?? "N/A"}</Chip.Label>
+                    <Chip.Label>
+                      {emp.department?.toLocaleUpperCase() ?? "N/A"}
+                    </Chip.Label>
                   </Chip>
                 </Table.Cell>
                 <Table.Cell>
@@ -293,18 +316,29 @@ export default function EmployeeTableAdmin() {
                   }
                 >
                   <ComboBox.InputGroup>
+                    {/* <Input
+                      placeholder="Select department"
+                      className="border border-gray-300"
+                      value={form.department}
+                      onChange={(e) => setDept(e.target.value)}
+                    /> */}
                     <Input
                       placeholder="Select department"
                       className="border border-gray-300"
                       value={form.department}
-                      readOnly
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          department: e.target.value.toUpperCase(),
+                        }))
+                      }
                     />
                     <ComboBox.Trigger />
                   </ComboBox.InputGroup>
 
                   <ComboBox.Popover>
                     <ListBox className="max-h-48 overflow-y-auto">
-                      {departments.map((d) => (
+                      {filteredDepartments.map((d) => (
                         <ListBox.Item key={d} id={d} textValue={d}>
                           {d}
                         </ListBox.Item>
