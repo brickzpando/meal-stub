@@ -73,7 +73,7 @@ export async function getEmployeesBasic() {
       id: true,
       fullName: true,
       balance: true, // 🔥 SOURCE OF TRUTH
-
+      employeeNumber: true,
       transactions: {
         select: {
           amount: true,
@@ -117,6 +117,7 @@ export async function getEmployeesBasic() {
 
     return {
       id: emp.id,
+      employeeNumber: emp.employeeNumber,
       fullName: emp.fullName,
       balance: Number(emp.balance),
       weekly: weeklyIssued - weeklySpent,

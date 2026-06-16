@@ -107,8 +107,17 @@ export default function PurchaseForm() {
           <ComboBox.Popover>
             <ListBox className="max-h-48 overflow-y-auto">
               {employees.map((emp) => (
-                <ListBox.Item key={emp.id} id={emp.id} textValue={emp.fullName}>
-                  {emp.fullName}
+                <ListBox.Item
+                  key={emp.id}
+                  id={emp.id}
+                  textValue={`${emp.fullName} ${emp.employeeNumber}`}
+                >
+                  <div className="flex items-center gap-1 w-full">
+                    <span>
+                      {emp.fullName} - {emp.employeeNumber}
+                    </span>
+                  </div>
+
                   <ListBox.ItemIndicator />
                 </ListBox.Item>
               ))}
