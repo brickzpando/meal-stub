@@ -3,7 +3,76 @@ import { StubSource, TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-import { startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
+
+export async function issueWeeklyStubBulk() {
+  const now = subWeeks(new Date(), 1);
+
+  const weekStart = startOfWeek(now, {
+    weekStartsOn: 1,
+  });
+
+  const weekEnd = endOfWeek(now, {
+    weekStartsOn: 1,
+  });
+
+  const employees = await prisma.employee.findMany({
+    select: {
+      id: true,
+    },
+  });
+
+  let issued = 0;
+  let skipped = 0;
+
+  for (const employee of employees) {
+    const existingWeekly = await prisma.transaction.findFirst({
+      where: {
+        employeeId: employee.id,
+        type: TransactionType.WEEKLY,
+        createdAt: {
+          gte: weekStart,
+          lte: weekEnd,
+        },
+      },
+    });
+
+    if (existingWeekly) {
+      skipped++;
+      continue;
+    }
+
+    await prisma.transaction.create({
+      data: {
+        employeeId: employee.id,
+        amount: 100,
+        type: TransactionType.WEEKLY,
+        sourceType: StubSource.WEEKLY,
+        remarks: "Weekly Stub",
+      },
+    });
+
+    await prisma.employee.update({
+      where: {
+        id: employee.id,
+      },
+      data: {
+        balance: {
+          increment: 100,
+        },
+      },
+    });
+
+    issued++;
+  }
+
+  revalidatePath("/hr");
+
+  return {
+    issued,
+    skipped,
+  };
+}
 
 export async function issueWeeklyStub(employeeId: string) {
   if (!employeeId) {
