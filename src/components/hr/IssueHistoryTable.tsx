@@ -149,7 +149,25 @@ export default function IssueHistoryTable() {
             ))}
           </Table.Header>
 
-          <Table.Body>
+          <Table.Body
+            renderEmptyState={() => (
+              <div className="flex flex-col items-center gap-3 py-12">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                  <History className="h-7 w-7 text-slate-400" />
+                </div>
+
+                <div className="text-center">
+                  <h4 className="font-semibold text-slate-700">
+                    No issuance records found
+                  </h4>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Weekly and reward stub issuances will appear here.
+                  </p>
+                </div>
+              </div>
+            )}
+          >
             {paginatedItems.map((item) => (
               <Table.Row key={item.id}>
                 <Table.Cell>
