@@ -161,14 +161,14 @@ export async function getEmployeeMap() {
 
 export async function importEmployees(
   employees: {
-    employeeId: string;
+    employeeNumber: string;
     fullName: string;
     department: string;
   }[],
 ) {
   await prisma.employee.createMany({
     data: employees.map((emp) => ({
-      employeeNumber: emp.employeeId, // map CSV -> DB field
+      employeeNumber: emp.employeeNumber, // map CSV -> DB field
       fullName: emp.fullName,
       department: emp.department,
       role: UserRole.EMPLOYEE, // required field
