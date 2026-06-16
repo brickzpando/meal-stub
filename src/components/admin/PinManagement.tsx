@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { usePins } from "@/hooks/admin/usePins";
 import { useSavePins } from "@/hooks/admin/useSavePins";
-import { Button, Modal, toast } from "@heroui/react";
+import { Button, Modal, Skeleton, toast } from "@heroui/react";
 
 export default function PinManagement() {
   const [hr, setHr] = useState("");
@@ -23,7 +23,7 @@ export default function PinManagement() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [admin, setAdmin] = useState("");
 
-  const { data } = usePins();
+  const { data, isLoading } = usePins();
 
   const saveMutation = useSavePins();
 
@@ -57,6 +57,32 @@ export default function PinManagement() {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-36 rounded-md" />
+            <Skeleton className="h-4 w-64 rounded-md" />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="mb-2 h-4 w-24 rounded-md" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+          ))}
+
+          <Skeleton className="h-12 w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

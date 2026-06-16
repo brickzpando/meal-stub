@@ -13,6 +13,7 @@ import {
   Label,
   ComboBox,
   ListBox,
+  Skeleton,
 } from "@heroui/react";
 import { useEmployees } from "@/hooks/employees/useEmployees";
 import {
@@ -23,7 +24,7 @@ import { Employee } from "@/types/employee";
 import { useDepartments } from "@/hooks/employees/useDepartments";
 
 export default function EmployeeTableAdmin() {
-  const { data: employees = [] } = useEmployees();
+  const { data: employees = [], isLoading } = useEmployees();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const { mutate: deleteEmp } = useDeleteEmployee();
@@ -128,6 +129,64 @@ export default function EmployeeTableAdmin() {
       label: "ACTION",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-xl" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-4 w-32 rounded-md" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-full rounded-lg md:w-80" />
+        </div>
+
+        {/* Table Header */}
+        <div className="grid grid-cols-5 gap-4 border-b border-slate-200 pb-3">
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+        </div>
+
+        {/* Rows */}
+        <div className="space-y-4 pt-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-5 gap-4 items-center">
+              <Skeleton className="h-5 rounded-md" />
+
+              <Skeleton className="h-5 rounded-md" />
+
+              <Skeleton className="h-7 w-24 rounded-full" />
+
+              <Skeleton className="h-5 rounded-md" />
+
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-20 rounded-lg" />
+                <Skeleton className="h-8 w-20 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-6 flex justify-center gap-2">
+          <Skeleton className="h-9 w-24 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-24 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
