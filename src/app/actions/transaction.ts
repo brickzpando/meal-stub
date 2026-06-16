@@ -110,7 +110,7 @@ export async function issueWeeklyStub(employeeId: string) {
     data: {
       employeeId,
       amount: 100,
-      type: StubSource.WEEKLY,
+      type: TransactionType.WEEKLY,
       sourceType: StubSource.WEEKLY,
       remarks: "Weekly Stub",
     },
@@ -232,7 +232,7 @@ export async function issueRewardStub(
       employeeId,
       amount,
       sourceType: StubSource.REWARD,
-      type: StubSource.REWARD,
+      type: TransactionType.REWARD,
       remarks: reason,
     },
   });
@@ -285,8 +285,6 @@ export async function createPurchase(data: {
   amount: number;
   sourceType: "WEEKLY" | "REWARD";
 }) {
-  console.log("PURCHASE DATA:", data);
-
   const { employeeId, amount, sourceType } = data;
 
   const transaction = await prisma.transaction.create({
@@ -299,11 +297,6 @@ export async function createPurchase(data: {
     },
   });
 
-  console.log("TRANSACTION CREATED:", {
-    ...transaction,
-    amount: Number(transaction.amount),
-  });
-
   const updatedEmployee = await prisma.employee.update({
     where: { id: employeeId },
     data: {
@@ -312,8 +305,6 @@ export async function createPurchase(data: {
       },
     },
   });
-
-  console.log("BALANCE AFTER UPDATE:", updatedEmployee.balance);
 
   // return transaction;
   return {

@@ -360,6 +360,47 @@ export async function getDepartments() {
 
   return [...new Set([...defaultDepartments, ...dbDepartments])].sort();
 }
+
+export async function resetAllEmployeeBalances() {
+  const employees = await prisma.employee.findMany({
+    select: {
+      id: true,
+      balance: true,
+    },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    for (const emp of employees) {
+      const oldBalance = Number(emp.balance);
+
+      // reset balance
+      await tx.employee.update({
+        where: { id: emp.id },
+        data: {
+          balance: 0,
+        },
+      });
+
+      // audit trail
+      if (oldBalance !== 0) {
+        await tx.transaction.create({
+          data: {
+            employeeId: emp.id,
+            amount: -oldBalance,
+            type: TransactionType.ADJUSTMENT,
+            remarks: "SYSTEM RESET: balance cleared",
+          },
+        });
+      }
+    }
+  });
+
+  return {
+    success: true,
+    message: "All employee balances reset to 0",
+  };
+}
+
 // export async function updateEmployee(data: {
 //   id: string;
 //   employeeNumber?: string;
