@@ -150,7 +150,9 @@ export default function EmployeeTable() {
 
                 <Table.Cell>
                   <Chip>
-                    <Chip.Label>{emp.department ?? "N/A"}</Chip.Label>
+                    <Chip.Label>
+                      {emp.department?.toLocaleUpperCase() ?? "N/A"}
+                    </Chip.Label>
                   </Chip>
                 </Table.Cell>
                 <Table.Cell>

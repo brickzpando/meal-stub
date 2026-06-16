@@ -331,6 +331,35 @@ export async function updateEmployee(data: {
     balance: Number(updated.balance),
   };
 }
+
+export async function getDepartments() {
+  const defaultDepartments = [
+    "HR",
+    "IT",
+    "FINANCE",
+    "SALES",
+    "OPERATIONS",
+    "BILLING",
+  ];
+
+  const employees = await prisma.employee.findMany({
+    where: {
+      department: {
+        not: null,
+      },
+    },
+    select: {
+      department: true,
+    },
+    distinct: ["department"],
+  });
+
+  const dbDepartments = employees
+    .map((e) => e.department)
+    .filter(Boolean) as string[];
+
+  return [...new Set([...defaultDepartments, ...dbDepartments])].sort();
+}
 // export async function updateEmployee(data: {
 //   id: string;
 //   employeeNumber?: string;
