@@ -5,8 +5,7 @@ import { toast } from "@heroui/react";
 
 export default function SystemTools() {
   const resetData = async () => {
-    const ok = confirm("Reset ALL employee balances?"); //TODO himoa ni nga modal
-
+    const ok = confirm("Reset ALL employee balances?");
     if (!ok) return;
 
     try {
@@ -19,7 +18,7 @@ export default function SystemTools() {
   };
 
   return (
-    <div className="inline-flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="w-full max-w-42.5 justify-center items-center flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div>
         <h3 className="text-sm font-semibold text-slate-900">System Tools</h3>
         <p className="text-xs text-slate-500">Administrative actions</p>
@@ -27,7 +26,7 @@ export default function SystemTools() {
 
       <button
         onClick={resetData}
-        className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+        className="w-full rounded-lg bg-red-500 px-3 py-2 text-xs font-medium text-white hover:bg-red-600"
       >
         Reset System
       </button>

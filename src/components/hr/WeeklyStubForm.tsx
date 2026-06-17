@@ -45,7 +45,7 @@ export default function WeeklyStubForm() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl bg-white border border-slate-200  p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <Skeleton className="h-11 w-11 rounded-xl" />
 
@@ -73,7 +73,7 @@ export default function WeeklyStubForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border h-full border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
           <CalendarDays className="h-5 w-5 text-blue-600" />

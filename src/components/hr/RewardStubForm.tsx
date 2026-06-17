@@ -110,7 +110,7 @@ export default function RewardStubForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl h-full border border-slate-200 bg-white p-6 shadow-sm">
       {/* HEADER */}
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100">

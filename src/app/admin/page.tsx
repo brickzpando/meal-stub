@@ -5,22 +5,23 @@ import SettlementReport from "@/components/admin/SettlementReport";
 import PinManagement from "@/components/admin/PinManagement";
 import SystemTools from "@/components/admin/SystemTools";
 import TopBar from "@/components/TopBar";
-import DataManagement from "@/components/admin/DataManagement";
 import EmployeeTableAdmin from "@/components/admin/EmployeeTable";
 export default function AdminPage() {
   return (
     <main className="page-container">
       <TopBar role="Admin" />
       <DashboardStats />
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6 items-start">
         <PinManagement />
-        <DataManagement />
+        <SystemTools />
+        {/* <DataManagement /> */}
       </div>
       <WeeklySummary />
       <EmployeeTableAdmin />
       <SettlementReport />
       <TransactionReport />
-      <SystemTools />
+
+      {/* <SystemTools /> */}
     </main>
   );
 }

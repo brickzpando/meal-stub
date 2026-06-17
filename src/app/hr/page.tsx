@@ -6,6 +6,7 @@ import RewardStubForm from "@/components/hr/RewardStubForm";
 import EmployeeTable from "@/components/hr/EmployeeTable";
 import IssueHistoryTable from "@/components/hr/IssueHistoryTable";
 import BulkWeeklyStubCard from "@/components/hr/BulkWeeklyStubCard";
+import DataManagement from "@/components/admin/DataManagement";
 export default function HRPage() {
   return (
     <>
@@ -18,12 +19,18 @@ export default function HRPage() {
           </p>
         </div>
         <DashboardStats />
-        <AddEmployeeForm />
         <BulkWeeklyStubCard />
-        <div className="grid gap-6 xl:grid-cols-2">
+        <AddEmployeeForm />
+        <div className="grid lg:grid-cols-3 gap-6 items-start">
+          <DataManagement />
           <WeeklyStubForm />
           <RewardStubForm />
         </div>
+
+        {/* <div className="grid gap-6 xl:grid-cols-2">
+          <WeeklyStubForm />
+          <RewardStubForm />
+        </div> */}
         <EmployeeTable />
         <IssueHistoryTable />
       </main>
