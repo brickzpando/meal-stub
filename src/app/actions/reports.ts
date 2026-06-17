@@ -2,9 +2,51 @@
 import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+// export async function getSettlementReport() {
+//   const employees = await prisma.employee.findMany({
+//     include: {
+//       transactions: {
+//         select: {
+//           type: true,
+//           amount: true,
+//         },
+//       },
+//     },
+//     orderBy: {
+//       fullName: "asc",
+//     },
+//   });
+
+//   return employees.map((employee) => {
+//     const issued = employee.transactions
+//       .filter(
+//         (t) =>
+//           t.type === TransactionType.WEEKLY ||
+//           t.type === TransactionType.REWARD ||
+//           t.type === TransactionType.ADJUSTMENT,
+//       )
+//       .reduce((sum, t) => sum + Number(t.amount), 0);
+
+//     const used = employee.transactions
+//       .filter((t) => t.type === TransactionType.PURCHASE)
+//       .reduce((sum, t) => sum + Number(t.amount), 0);
+
+//     return {
+//       id: employee.id,
+//       name: employee.fullName,
+//       issued,
+//       used,
+//       remaining: issued - used,
+//     };
+//   });
+// }
+
 export async function getSettlementReport() {
   const employees = await prisma.employee.findMany({
-    include: {
+    select: {
+      id: true,
+      fullName: true,
+      balance: true,
       transactions: {
         select: {
           type: true,
@@ -22,8 +64,7 @@ export async function getSettlementReport() {
       .filter(
         (t) =>
           t.type === TransactionType.WEEKLY ||
-          t.type === TransactionType.REWARD ||
-          t.type === TransactionType.ADJUSTMENT,
+          t.type === TransactionType.REWARD,
       )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
@@ -36,11 +77,10 @@ export async function getSettlementReport() {
       name: employee.fullName,
       issued,
       used,
-      remaining: issued - used,
+      remaining: Number(employee.balance), // source of truth
     };
   });
 }
-
 export async function getTransactionReport() {
   const transactions = await prisma.transaction.findMany({
     include: {
