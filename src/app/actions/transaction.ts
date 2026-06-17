@@ -147,33 +147,52 @@ export async function getEmployeesBasic() {
     },
     orderBy: { fullName: "asc" },
   });
+  // return employees.map((emp) => {
+  //   const weeklyIssued = emp.transactions
+  //     .filter((t) => t.type === TransactionType.WEEKLY)
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const rewardIssued = emp.transactions
+  //     .filter((t) => t.type === TransactionType.REWARD)
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const weeklySpent = emp.transactions
+  //     .filter(
+  //       (t) =>
+  //         t.type === TransactionType.PURCHASE &&
+  //         t.sourceType === StubSource.WEEKLY,
+  //     )
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const rewardSpent = emp.transactions
+  //     .filter(
+  //       (t) =>
+  //         t.type === TransactionType.PURCHASE &&
+  //         t.sourceType === StubSource.REWARD,
+  //     )
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const spent = weeklySpent + rewardSpent;
+
+  //   const adjustment = emp.transactions
+  //     .filter((t) => t.type === TransactionType.ADJUSTMENT)
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
   return employees.map((emp) => {
-    const weeklyIssued = emp.transactions
-      .filter((t) => t.type === TransactionType.WEEKLY)
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const rewardIssued = emp.transactions
-      .filter((t) => t.type === TransactionType.REWARD)
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const weeklySpent = emp.transactions
+    // ✅ TOTAL ISSUED (WEEKLY + REWARD)
+    const issued = emp.transactions
       .filter(
         (t) =>
-          t.type === TransactionType.PURCHASE &&
-          t.sourceType === StubSource.WEEKLY,
+          t.type === TransactionType.WEEKLY ||
+          t.type === TransactionType.REWARD,
       )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    const rewardSpent = emp.transactions
-      .filter(
-        (t) =>
-          t.type === TransactionType.PURCHASE &&
-          t.sourceType === StubSource.REWARD,
-      )
+    // ✅ TOTAL SPENT (ALL PURCHASES ONLY)
+    const spent = emp.transactions
+      .filter((t) => t.type === TransactionType.PURCHASE)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    const spent = weeklySpent + rewardSpent;
-
+    // ✅ OPTIONAL: ADJUSTMENT (admin edits)
     const adjustment = emp.transactions
       .filter((t) => t.type === TransactionType.ADJUSTMENT)
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -183,8 +202,9 @@ export async function getEmployeesBasic() {
       employeeNumber: emp.employeeNumber,
       fullName: emp.fullName,
       balance: Number(emp.balance),
-      weekly: weeklyIssued - weeklySpent,
-      reward: rewardIssued - rewardSpent,
+      // weekly: weeklyIssued - weeklySpent,
+      // reward: rewardIssued - rewardSpent,
+      issued,
       spent,
       adjustment,
     };
