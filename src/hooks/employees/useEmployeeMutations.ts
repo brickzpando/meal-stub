@@ -19,11 +19,7 @@ export function useCreateEmployee() {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["employees-basic"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["employees-basic"],
+        queryKey: queryKeys.employeeBasic,
       });
     },
   });

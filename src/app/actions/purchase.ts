@@ -21,6 +21,6 @@ export async function getPurchaseTransactions() {
 
   return purchases.map((p) => ({
     ...p,
-    amount: Number(p.amount), // 🔥 FIX HERE
+    amount: Number(p.amount),
   }));
 }

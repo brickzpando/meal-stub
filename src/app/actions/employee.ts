@@ -16,7 +16,6 @@ export async function createEmployee(data: {
     throw new Error("Full name is required");
   }
 
-  // check duplicate
   const exists = await prisma.employee.findFirst({
     where: {
       fullName: {
@@ -46,7 +45,7 @@ export async function createEmployee(data: {
     department: employee.department,
     position: employee.position,
     role: employee.role,
-    balance: Number(employee.balance), // 🔥 FIX HERE
+    balance: Number(employee.balance),
     createdAt: employee.createdAt.toISOString(),
     updatedAt: employee.updatedAt.toISOString(),
   };
@@ -68,37 +67,6 @@ export async function getEmployees() {
     balance: Number(emp.balance),
   }));
 }
-
-// export async function getEmployees() {
-//   const employees = await prisma.employee.findMany({
-//     select: {
-//       id: true,
-//       fullName: true,
-//       employeeNumber: true,
-//       department: true,
-
-//       transactions: {
-//         select: {
-//           amount: true,
-//         },
-//       },
-//     },
-//   });
-
-//   return employees.map((emp) => {
-//     const balance = emp.transactions.reduce((sum, t) => {
-//       return sum + Number(t.amount);
-//     }, 0);
-
-//     return {
-//       id: emp.id,
-//       fullName: emp.fullName,
-//       employeeNumber: emp.employeeNumber,
-//       department: emp.department,
-//       balance,
-//     };
-//   });
-// }
 
 export async function deleteEmployee(id: string) {
   await prisma.transaction.deleteMany({
@@ -168,10 +136,10 @@ export async function importEmployees(
 ) {
   await prisma.employee.createMany({
     data: employees.map((emp) => ({
-      employeeNumber: emp.employeeNumber, // map CSV -> DB field
+      employeeNumber: emp.employeeNumber,
       fullName: emp.fullName,
       department: emp.department,
-      role: UserRole.EMPLOYEE, // required field
+      role: UserRole.EMPLOYEE,
     })),
     skipDuplicates: true,
   });
@@ -228,7 +196,6 @@ export async function exportEmployeesExcel() {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Employees");
 
-  // headers
   sheet.columns = [
     { header: "Employee ID", key: "id", width: 20 },
     { header: "Employee Number", key: "employeeNumber", width: 20 },
@@ -400,48 +367,3 @@ export async function resetAllEmployeeBalances() {
     message: "All employee balances reset to 0",
   };
 }
-
-// export async function updateEmployee(data: {
-//   id: string;
-//   employeeNumber?: string;
-//   fullName?: string;
-//   department?: string;
-//   position?: string;
-//   balance?: number;
-// }) {
-//   const { id, fullName, department, employeeNumber, position, balance } = data;
-
-//   if (!id) throw new Error("Employee ID is required");
-
-//   if (fullName) {
-//     const exists = await prisma.employee.findFirst({
-//       where: {
-//         fullName: {
-//           equals: fullName,
-//           mode: "insensitive",
-//         },
-//         NOT: { id },
-//       },
-//     });
-
-//     if (exists) {
-//       throw new Error("Employee name already exists");
-//     }
-//   }
-
-//   const updated = await prisma.employee.update({
-//     where: { id },
-//     data: {
-//       ...(fullName && { fullName }),
-//       ...(department && { department }),
-//       ...(employeeNumber && { employeeNumber }),
-//       ...(position && { position }),
-//       ...(balance !== undefined && { balance: Number(balance) }),
-//     },
-//   });
-
-//   return {
-//     ...updated,
-//     balance: Number(updated.balance),
-//   };
-// }

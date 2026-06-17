@@ -9,4 +9,11 @@ export const queryKeys = {
   settlementReport: ["settlement-report"] as const,
   transactionReport: ["transaction-report"] as const,
   purchaseTransactions: ["purchase-transactions"] as const,
+  pins: ["pins"] as const,
+  systemStats: ["system-stats"] as const,
+  departments: ["departments"] as const,
+  employeeBasic: ["employees-basic"] as const,
+  employeesMap: ["employees-map"] as const,
+  pantrySummary: ["pantry-summary"] as const,
+  transactions: ["transactions"] as const,
 };

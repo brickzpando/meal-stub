@@ -112,13 +112,6 @@ export default function PinManagement() {
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-            {/* <input
-              type="password"
-              value={hr}
-              onChange={(e) => setHr(e.target.value)}
-              placeholder="Enter HR PIN"
-              className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            /> */}
             <input
               type={showHr ? "text" : "password"}
               value={hr}
@@ -169,13 +162,6 @@ export default function PinManagement() {
                 <Eye className="h-4 w-4" />
               )}
             </button>
-            {/* <input
-              type="password"
-              value={pantry}
-              onChange={(e) => setPantry(e.target.value)}
-              placeholder="Enter Pantry PIN"
-              className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            /> */}
           </div>
         </div>
 
@@ -188,13 +174,6 @@ export default function PinManagement() {
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-            {/* <input
-              type="password"
-              value={admin}
-              onChange={(e) => setAdmin(e.target.value)}
-              placeholder="Enter Admin PIN"
-              className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            /> */}
             <input
               type={showAdmin ? "text" : "password"}
               value={admin}

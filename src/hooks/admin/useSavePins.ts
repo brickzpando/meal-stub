@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { savePins } from "@/app/actions/user";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useSavePins() {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export function useSavePins() {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["pins"],
+        queryKey: queryKeys.pins,
       });
     },
   });

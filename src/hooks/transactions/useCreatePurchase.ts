@@ -11,18 +11,18 @@ export function useCreatePurchase() {
     mutationFn: createPurchase,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["transactions"],
+        queryKey: queryKeys.transactions,
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["employees-basic"],
+        queryKey: queryKeys.employeeBasic,
       });
 
       queryClient.invalidateQueries({
         queryKey: queryKeys.purchaseTransactions,
       });
       queryClient.invalidateQueries({
-        queryKey: ["pantry-summary"],
+        queryKey: queryKeys.pantrySummary,
       });
     },
   });

@@ -14,14 +14,14 @@ export function useEmployees() {
 
 export function useEmployeeMap() {
   return useQuery({
-    queryKey: ["employees-map"],
+    queryKey: queryKeys.employeesMap,
     queryFn: getEmployeeMap,
   });
 }
 
 export function useEmployeesBasic() {
   return useQuery({
-    queryKey: ["employees-basic"],
+    queryKey: queryKeys.employeeBasic,
     queryFn: getEmployeesBasic,
   });
 }

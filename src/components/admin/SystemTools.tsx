@@ -5,7 +5,7 @@ import { toast } from "@heroui/react";
 
 export default function SystemTools() {
   const resetData = async () => {
-    const ok = confirm("Reset ALL employee balances?");
+    const ok = confirm("Reset ALL employee balances?"); //TODO himoa ni nga modal
 
     if (!ok) return;
 

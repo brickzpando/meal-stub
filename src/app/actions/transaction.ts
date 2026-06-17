@@ -1,8 +1,6 @@
 "use server";
 import { StubSource, TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-
 import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
 export async function issueWeeklyStubBulk() {
@@ -66,8 +64,6 @@ export async function issueWeeklyStubBulk() {
     issued++;
   }
 
-  revalidatePath("/hr");
-
   return {
     issued,
     skipped,
@@ -124,8 +120,6 @@ export async function issueWeeklyStub(employeeId: string) {
       },
     },
   });
-
-  revalidatePath("/hr");
 
   return {
     id: transaction.id,
@@ -215,7 +209,7 @@ export async function getIssuanceHistory() {
     type: t.type,
     remarks: t.remarks,
     createdAt: t.createdAt.toISOString(),
-    amount: Number(t.amount), // ✅ FIX HERE
+    amount: Number(t.amount),
   }));
 }
 
@@ -246,8 +240,6 @@ export async function issueRewardStub(
     },
   });
 
-  revalidatePath("/hr");
-
   return {
     id: transaction.id,
     employeeId: transaction.employeeId,
@@ -273,9 +265,9 @@ export async function getTransactions() {
   return transactions.map((t) => ({
     id: t.id,
     employeeId: t.employeeId,
-    amount: Number(t.amount), // ✅ FIX HERE
+    amount: Number(t.amount),
     type: t.type,
-    createdAt: t.createdAt.toISOString(), // ✅ also fix this
+    createdAt: t.createdAt.toISOString(),
     remarks: t.remarks,
   }));
 }
@@ -297,16 +289,6 @@ export async function createPurchase(data: {
     },
   });
 
-  const updatedEmployee = await prisma.employee.update({
-    where: { id: employeeId },
-    data: {
-      balance: {
-        decrement: amount,
-      },
-    },
-  });
-
-  // return transaction;
   return {
     id: transaction.id,
     employeeId: transaction.employeeId,
@@ -316,43 +298,3 @@ export async function createPurchase(data: {
     createdAt: transaction.createdAt.toISOString(),
   };
 }
-
-// export async function createPurchase(data: {
-//   employeeId: string;
-//   amount: number;
-//   sourceType: "WEEKLY" | "REWARD";
-// }) {
-//   const { employeeId, amount, sourceType } = data;
-
-//   if (!employeeId) throw new Error("Employee required");
-//   if (amount <= 0) throw new Error("Invalid amount");
-
-//   const transaction = await prisma.transaction.create({
-//     data: {
-//       employeeId,
-//       amount,
-//       type: TransactionType.PURCHASE,
-//       sourceType: sourceType,
-//       remarks: "Pantry Purchase",
-//     },
-//   });
-
-//   await prisma.employee.update({
-//     where: { id: employeeId },
-//     data: {
-//       balance: {
-//         decrement: amount,
-//       },
-//     },
-//   });
-
-//   revalidatePath("/pantry");
-
-//   return {
-//     id: transaction.id,
-//     employeeId: transaction.employeeId,
-//     amount: Number(transaction.amount),
-//     type: transaction.type,
-//     createdAt: transaction.createdAt.toISOString(),
-//   };
-// }
