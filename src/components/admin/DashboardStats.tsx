@@ -1,9 +1,10 @@
 "use client";
 import { useAdminDashboardStats } from "@/hooks/admin/useAdminDashboardStats";
+import { Skeleton } from "@heroui/react";
 import { Users, CalendarDays, Gift, ShoppingCart } from "lucide-react";
 
 export default function DashboardStats() {
-  const { data } = useAdminDashboardStats();
+  const { data, isLoading } = useAdminDashboardStats();
 
   const stats = [
     {
@@ -35,6 +36,28 @@ export default function DashboardStats() {
       iconColor: "text-rose-600",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1 space-y-3">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-8 w-32 rounded-md" />
+              </div>
+
+              <Skeleton className="h-14 w-14 rounded-2xl" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

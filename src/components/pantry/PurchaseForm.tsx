@@ -105,7 +105,26 @@ export default function PurchaseForm() {
           </ComboBox.InputGroup>
 
           <ComboBox.Popover>
-            <ListBox className="max-h-48 overflow-y-auto">
+            <ListBox
+              className="max-h-48 overflow-y-auto"
+              renderEmptyState={() => (
+                <div className="flex flex-col items-center gap-2 py-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
+                    <User className="h-5 w-5 text-slate-400" />
+                  </div>
+
+                  <div className="text-center">
+                    <p className="font-medium text-slate-700">
+                      No employees found
+                    </p>
+
+                    <p className="text-xs text-slate-500">
+                      No employee matches your search.
+                    </p>
+                  </div>
+                </div>
+              )}
+            >
               {employees.map((emp) => (
                 <ListBox.Item
                   key={emp.id}

@@ -2,15 +2,43 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useEmployeesBasic } from "@/hooks/employees/useEmployees";
+import { Skeleton } from "@heroui/react";
 import { ShoppingBag, CalendarDays, Gift, CreditCard } from "lucide-react";
 
 export default function EmployeeSummary() {
   const { user } = useAuth();
-  const { data: employees = [] } = useEmployeesBasic();
+  const { data: employees = [], isLoading } = useEmployeesBasic();
 
   if (!user?.employee) return null;
 
   const employee = employees.find((e) => e.id === user.employee?.id);
+
+  if (isLoading || !user?.employee) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6">
+          <Skeleton className="h-6 w-40 rounded-md" />
+          <Skeleton className="mt-2 h-4 w-72 rounded-md" />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex h-32 items-center justify-between rounded-xl border bg-slate-50 p-4"
+            >
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-8 w-28 rounded-md" />
+              </div>
+
+              <Skeleton className="h-12 w-12 rounded-xl" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!employee) return null;
 

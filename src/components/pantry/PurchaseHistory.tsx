@@ -1,13 +1,18 @@
 "use client";
-import { Table, Chip, InputGroup, Pagination } from "@heroui/react";
+import { Table, Chip, InputGroup, Pagination, Skeleton } from "@heroui/react";
 import { useMemo, useState } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import { useEmployees } from "@/hooks/employees/useEmployees";
 import { usePurchaseTransactions } from "@/hooks/transactions/usePurchaseTransactions";
 
 export default function PurchaseHistory() {
-  const { data: employees = [] } = useEmployees();
-  const { data: transactions = [] } = usePurchaseTransactions();
+  const { data: employees = [], isLoading: employeesLoading } = useEmployees();
+
+  const { data: transactions = [], isLoading: transactionsLoading } =
+    usePurchaseTransactions();
+
+  const isLoading = employeesLoading || transactionsLoading;
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const rowsPerPage = 10;
@@ -57,6 +62,39 @@ export default function PurchaseHistory() {
       .slice(start, start + rowsPerPage);
   }, [filteredPurchases, page]);
   const columns = ["DATE", "EMPLOYEE NUMBER", "EMPLOYEE", "AMOUNT"];
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-xl" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-4 w-32 rounded-md" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-72 rounded-lg" />
+        </div>
+
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-4 gap-4 border-b border-slate-100 py-3"
+            >
+              <Skeleton className="h-4 rounded-md" />
+              <Skeleton className="h-4 rounded-md" />
+              <Skeleton className="h-4 rounded-md" />
+              <Skeleton className="h-4 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

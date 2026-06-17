@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Database, Download, Upload, FileSpreadsheet } from "lucide-react";
-import { Button, toast } from "@heroui/react";
+import { Button, Skeleton, toast } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { useSystemStats } from "@/hooks/admin/useSystemStats";
@@ -11,10 +11,11 @@ import { exportEmployeesExcel, importEmployees } from "@/app/actions/employee";
 export default function DataManagement() {
   const queryClient = useQueryClient();
 
-  const { data: employees = [] } = useEmployees();
+  const { data: employees = [], isLoading: employeesLoading } = useEmployees();
 
-  const { data: stats } = useSystemStats();
+  const { data: stats, isLoading: statsLoading } = useSystemStats();
 
+  const isLoading = employeesLoading || statsLoading;
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const handleImportCsv = async (
@@ -156,6 +157,45 @@ export default function DataManagement() {
       setIsExporting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40 rounded-md" />
+            <Skeleton className="h-4 w-64 rounded-md" />
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <Skeleton className="mb-3 h-5 w-36 rounded-md" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+        </div>
+
+        <div className="mb-6">
+          <Skeleton className="mb-3 h-5 w-36 rounded-md" />
+
+          <div className="flex gap-3">
+            <Skeleton className="h-10 flex-1 rounded-xl" />
+            <Skeleton className="h-10 flex-1 rounded-xl" />
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl bg-slate-50 p-4">
+              <Skeleton className="h-3 w-20 rounded-md" />
+              <Skeleton className="mt-3 h-8 w-16 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center gap-3">

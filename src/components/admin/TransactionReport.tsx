@@ -1,11 +1,11 @@
 "use client";
 import { useMemo } from "react";
-import { Chip, InputGroup, Pagination, Table } from "@heroui/react";
+import { Chip, InputGroup, Pagination, Skeleton, Table } from "@heroui/react";
 import { useState } from "react";
 import { Receipt, Search } from "lucide-react";
 import { useTransactionReport } from "@/hooks/admin/useTransactionReport";
 export default function TransactionReport() {
-  const { data: transactions = [] } = useTransactionReport();
+  const { data: transactions = [], isLoading } = useTransactionReport();
   const [search, setSearch] = useState("");
   const filteredTransactions = useMemo(() => {
     const keyword = search.toLowerCase();
@@ -60,6 +60,59 @@ export default function TransactionReport() {
       label: "NOTE",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-xl" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-4 w-52 rounded-md" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-full rounded-lg md:w-80" />
+        </div>
+
+        {/* Table Header */}
+        <div className="grid grid-cols-6 gap-4 border-b border-slate-200 pb-3">
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+        </div>
+
+        {/* Rows */}
+        <div className="space-y-4 pt-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-6 gap-4 items-center">
+              <Skeleton className="h-5 rounded-md" />
+              <Skeleton className="h-5 rounded-md" />
+              <Skeleton className="h-5 rounded-md" />
+              <Skeleton className="h-7 w-24 rounded-full" />
+              <Skeleton className="h-5 rounded-md" />
+              <Skeleton className="h-5 rounded-md" />
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-6 flex justify-center gap-2">
+          <Skeleton className="h-9 w-24 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-24 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

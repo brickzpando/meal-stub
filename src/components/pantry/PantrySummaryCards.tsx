@@ -1,10 +1,11 @@
 "use client";
 
 import { usePantrySummary } from "@/hooks/pantry/usePantrySummary";
+import { Skeleton } from "@heroui/react";
 import { Banknote, Calendar, TrendingUp, CalendarDays } from "lucide-react";
 
 export default function PantrySummaryCards() {
-  const { data } = usePantrySummary();
+  const { data, isLoading } = usePantrySummary();
 
   const cards = [
     {
@@ -37,6 +38,26 @@ export default function PantrySummaryCards() {
       bg: "bg-purple-100",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 rounded-xl border bg-white p-4 shadow-sm"
+          >
+            <Skeleton className="h-10 w-10 rounded-lg" />
+
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="h-7 w-28 rounded-md" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
