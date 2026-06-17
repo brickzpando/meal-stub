@@ -15,7 +15,7 @@ import { useCreatePurchase } from "@/hooks/transactions/useCreatePurchase";
 
 export default function PurchaseForm() {
   const { data: employees = [] } = useEmployeesBasic();
-  const createPurchase = useCreatePurchase();
+  const { mutateAsync: createPurchase, isPending } = useCreatePurchase();
 
   const [employeeId, setEmployeeId] = useState("");
 
@@ -73,7 +73,7 @@ export default function PurchaseForm() {
     // }
 
     try {
-      await createPurchase.mutateAsync({
+      await createPurchase({
         employeeId,
         amount,
       });
@@ -214,10 +214,11 @@ export default function PurchaseForm() {
           />
         </div>
         <Button
+          isPending={isPending}
           onClick={purchase}
           className="w-full bg-blue-700 h-10 text-white rounded-md"
         >
-          Deduct Balance
+          {isPending ? "Deducting..." : "Deduct Balance"}
         </Button>
       </div>
     </div>
