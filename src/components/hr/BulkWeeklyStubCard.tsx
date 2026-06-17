@@ -44,7 +44,7 @@ export default function BulkWeeklyStubCard() {
         </div>
 
         <Button isPending={isPending} onClick={handleBulkIssue}>
-          Issue ₱100 To All Employees
+          {isPending ? "Issuing..." : " Issue ₱100 To All Employees"}
         </Button>
       </div>
     </div>

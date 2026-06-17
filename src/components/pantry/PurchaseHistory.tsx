@@ -1,5 +1,5 @@
 "use client";
-import { Table, Chip, InputGroup, Pagination, Skeleton } from "@heroui/react";
+import { Table, InputGroup, Pagination, Skeleton } from "@heroui/react";
 import { useMemo, useState } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import { useEmployees } from "@/hooks/employees/useEmployees";

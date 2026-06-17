@@ -27,11 +27,28 @@ export default function EmployeeTableAdmin() {
   const { data: employees = [], isLoading } = useEmployees();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const { mutate: deleteEmp } = useDeleteEmployee();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<Employee | null>(null);
+  const { mutate: deleteEmp, isPending: isDeleting } = useDeleteEmployee();
   const rowsPerPage = 10;
   const { data: departments = [] } = useDepartments();
   const { mutate: updateEmp, isPending } = useUpdateEmployee();
 
+  const openDelete = (emp: Employee) => {
+    setToDelete(emp);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!toDelete) return;
+
+    deleteEmp(toDelete.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        setToDelete(null);
+      },
+    });
+  };
   const [dept, setDept] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<Employee | null>(null);
@@ -63,7 +80,7 @@ export default function EmployeeTableAdmin() {
         fullName: emp.fullName,
         employeeNumber: emp.employeeNumber,
         department: emp.department ?? "",
-        balance: String(emp.balance ?? 0), // 🔥 CHANGE
+        balance: String(emp.balance ?? 0),
       });
     }, 0);
   };
@@ -75,7 +92,7 @@ export default function EmployeeTableAdmin() {
         fullName: form.fullName,
         employeeNumber: form.employeeNumber,
         department: form.department,
-        balance: Number(form.balance || 0), // 🔥 convert only here
+        balance: Number(form.balance || 0),
       },
       {
         onSuccess: () => {
@@ -86,11 +103,6 @@ export default function EmployeeTableAdmin() {
     );
   };
 
-  //   const filtered = employees.filter((e) =>
-  //     `${e.fullName} ${e.employeeNumber} ${e.department ?? ""}`
-  //       .toLowerCase()
-  //       .includes(search.toLowerCase()),
-  //   );
   const filtered = useMemo(() => {
     return employees.filter((e) =>
       `${e.fullName} ${e.employeeNumber} ${e.department ?? ""}`
@@ -147,7 +159,6 @@ export default function EmployeeTableAdmin() {
           <Skeleton className="h-10 w-full rounded-lg md:w-80" />
         </div>
 
-        {/* Table Header */}
         <div className="grid grid-cols-5 gap-4 border-b border-slate-200 pb-3">
           <Skeleton className="h-4 rounded-md" />
           <Skeleton className="h-4 rounded-md" />
@@ -156,7 +167,6 @@ export default function EmployeeTableAdmin() {
           <Skeleton className="h-4 rounded-md" />
         </div>
 
-        {/* Rows */}
         <div className="space-y-4 pt-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="grid grid-cols-5 gap-4 items-center">
@@ -176,7 +186,6 @@ export default function EmployeeTableAdmin() {
           ))}
         </div>
 
-        {/* Pagination */}
         <div className="mt-6 flex justify-center gap-2">
           <Skeleton className="h-9 w-24 rounded-lg" />
           <Skeleton className="h-9 w-9 rounded-lg" />
@@ -190,7 +199,6 @@ export default function EmployeeTableAdmin() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      {/* HEADER */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
@@ -219,7 +227,6 @@ export default function EmployeeTableAdmin() {
         </div>
       </div>
 
-      {/* TABLE */}
       <Table>
         <Table.Content>
           <Table.Header>
@@ -287,10 +294,18 @@ export default function EmployeeTableAdmin() {
                       Edit
                     </Button>
 
-                    <Button
+                    {/* <Button
                       size="sm"
                       variant="danger-soft"
                       onClick={() => removeEmployee(emp.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button> */}
+                    <Button
+                      size="sm"
+                      variant="danger-soft"
+                      onPress={() => openDelete(emp)}
                     >
                       <Trash2 className="h-4 w-4" />
                       Delete
@@ -303,7 +318,6 @@ export default function EmployeeTableAdmin() {
         </Table.Content>
       </Table>
 
-      {/* PAGINATION */}
       {pages > 1 && (
         <div className="mt-4">
           <Pagination className="justify-center">
@@ -375,12 +389,6 @@ export default function EmployeeTableAdmin() {
                   }
                 >
                   <ComboBox.InputGroup>
-                    {/* <Input
-                      placeholder="Select department"
-                      className="border border-gray-300"
-                      value={form.department}
-                      onChange={(e) => setDept(e.target.value)}
-                    /> */}
                     <Input
                       placeholder="Select department"
                       className="border border-gray-300"
@@ -405,13 +413,7 @@ export default function EmployeeTableAdmin() {
                     </ListBox>
                   </ComboBox.Popover>
                 </ComboBox>
-                {/* <Input
-                  className="border border-slate-300 w-full"
-                  value={form.department}
-                  onChange={(e) =>
-                    setForm({ ...form, department: e.target.value })
-                  }
-                /> */}
+
                 <Label>Balance</Label>
                 <Input
                   type="number"
@@ -420,7 +422,7 @@ export default function EmployeeTableAdmin() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      balance: e.target.value, // 🔥 keep as string
+                      balance: e.target.value,
                     })
                   }
                 />
@@ -435,13 +437,51 @@ export default function EmployeeTableAdmin() {
                   Cancel
                 </Button>
 
+                <Button size="sm" onPress={handleUpdate} isPending={isPending}>
+                  {isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
+      <Modal isOpen={deleteOpen} onOpenChange={setDeleteOpen}>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-80">
+              <Modal.CloseTrigger />
+
+              <Modal.Header>
+                <Modal.Heading>Delete Employee</Modal.Heading>
+              </Modal.Header>
+
+              <Modal.Body>
+                <p className="text-sm text-slate-600">
+                  Are you sure you want to delete <b>{toDelete?.fullName}</b>?
+                </p>
+
+                <p className="mt-2 text-xs text-red-500">
+                  This action cannot be undone.
+                </p>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => setDeleteOpen(false)}
+                >
+                  Cancel
+                </Button>
+
                 <Button
                   size="sm"
-                  onPress={handleUpdate}
-                  isPending={isPending}
-                  //   className="w-full"
+                  variant="danger"
+                  onPress={confirmDelete}
+                  isDisabled={isDeleting}
                 >
-                  Save Changes
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>

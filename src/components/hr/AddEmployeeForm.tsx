@@ -23,7 +23,7 @@ export default function AddEmployeeForm() {
   const filteredDepartments = departments.filter((d) =>
     d.toLowerCase().includes(dept.toLowerCase()),
   );
-  const { mutate: createEmployee } = useCreateEmployee();
+  const { mutate: createEmployee, isPending } = useCreateEmployee();
 
   const addEmployee = () => {
     if (!name.trim()) {
@@ -155,8 +155,14 @@ export default function AddEmployeeForm() {
           onClick={addEmployee}
           className="bg-blue-600 h-10 rounded-md hover:bg-blue-700 w-full text-white"
         >
-          <UserPlus className="h-4 w-4" />
-          Add Employee
+          {isPending ? (
+            "Adding..."
+          ) : (
+            <div className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add Employee
+            </div>
+          )}
         </Button>
       </div>
     </div>

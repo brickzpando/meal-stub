@@ -1,28 +1,29 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createPurchase } from "@/app/actions/transaction";
 import { queryKeys } from "@/lib/queryKeys";
+import { resetAllTransactions } from "@/app/actions/employee";
 
-export function useCreatePurchase() {
+export function useResetAllTransactions() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createPurchase,
+    mutationFn: resetAllTransactions,
+
     onSuccess: () => {
+      // refresh transaction-related queries
       queryClient.invalidateQueries({
         queryKey: queryKeys.transactions,
       });
 
+      // refresh issuance history if ginagamit nimo
       queryClient.invalidateQueries({
-        queryKey: queryKeys.employeeBasic,
+        queryKey: queryKeys.issuance,
       });
 
+      // refresh employee data (kay computed values depend sa transactions)
       queryClient.invalidateQueries({
-        queryKey: queryKeys.purchaseTransactions,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.pantrySummary,
+        queryKey: queryKeys.employees,
       });
     },
   });

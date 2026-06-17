@@ -42,25 +42,22 @@ export default function EmployeeSummary() {
 
   if (!employee) return null;
 
-  const weeklyIssued = employee.weekly ?? 0;
-  const rewardIssued = employee.reward ?? 0;
+  // const weeklyIssued = employee.weekly ?? 0;
+  // const rewardIssued = employee.reward ?? 0;
+  // const spent = employee.spent ?? 0;
+  // const balance = employee.balance ?? 0;
+
+  const issued = employee.issued ?? 0;
   const spent = employee.spent ?? 0;
   const balance = employee.balance ?? 0;
 
   const cards = [
     {
-      title: "Weekly Issued",
-      value: weeklyIssued,
+      title: "Total Issued",
+      value: issued,
       icon: CalendarDays,
       bg: "bg-emerald-100",
       color: "text-emerald-600",
-    },
-    {
-      title: "Reward Issued",
-      value: rewardIssued,
-      icon: Gift,
-      bg: "bg-amber-100",
-      color: "text-amber-600",
     },
     {
       title: "Current Balance",
@@ -78,6 +75,37 @@ export default function EmployeeSummary() {
     },
   ];
 
+  // const cards = [
+  //   {
+  //     title: "Weekly Issued",
+  //     value: weeklyIssued,
+  //     icon: CalendarDays,
+  //     bg: "bg-emerald-100",
+  //     color: "text-emerald-600",
+  //   },
+  //   {
+  //     title: "Reward Issued",
+  //     value: rewardIssued,
+  //     icon: Gift,
+  //     bg: "bg-amber-100",
+  //     color: "text-amber-600",
+  //   },
+  //   {
+  //     title: "Current Balance",
+  //     value: balance,
+  //     icon: CreditCard,
+  //     bg: "bg-blue-100",
+  //     color: "text-blue-600",
+  //   },
+  //   {
+  //     title: "Total Spent",
+  //     value: spent,
+  //     icon: ShoppingBag,
+  //     bg: "bg-rose-100",
+  //     color: "text-rose-600",
+  //   },
+  // ];
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
@@ -89,7 +117,7 @@ export default function EmployeeSummary() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => {
           const Icon = card.icon;
 

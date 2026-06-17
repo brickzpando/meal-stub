@@ -1,12 +1,10 @@
 "use server";
 import { StubSource, TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-
 import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
 export async function issueWeeklyStubBulk() {
-  const now = subWeeks(new Date(), 1);
+  const now = new Date();
 
   const weekStart = startOfWeek(now, {
     weekStartsOn: 1,
@@ -66,8 +64,6 @@ export async function issueWeeklyStubBulk() {
     issued++;
   }
 
-  revalidatePath("/hr");
-
   return {
     issued,
     skipped,
@@ -125,8 +121,6 @@ export async function issueWeeklyStub(employeeId: string) {
     },
   });
 
-  revalidatePath("/hr");
-
   return {
     id: transaction.id,
     employeeId: transaction.employeeId,
@@ -153,33 +147,52 @@ export async function getEmployeesBasic() {
     },
     orderBy: { fullName: "asc" },
   });
+  // return employees.map((emp) => {
+  //   const weeklyIssued = emp.transactions
+  //     .filter((t) => t.type === TransactionType.WEEKLY)
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const rewardIssued = emp.transactions
+  //     .filter((t) => t.type === TransactionType.REWARD)
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const weeklySpent = emp.transactions
+  //     .filter(
+  //       (t) =>
+  //         t.type === TransactionType.PURCHASE &&
+  //         t.sourceType === StubSource.WEEKLY,
+  //     )
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const rewardSpent = emp.transactions
+  //     .filter(
+  //       (t) =>
+  //         t.type === TransactionType.PURCHASE &&
+  //         t.sourceType === StubSource.REWARD,
+  //     )
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  //   const spent = weeklySpent + rewardSpent;
+
+  //   const adjustment = emp.transactions
+  //     .filter((t) => t.type === TransactionType.ADJUSTMENT)
+  //     .reduce((sum, t) => sum + Number(t.amount), 0);
   return employees.map((emp) => {
-    const weeklyIssued = emp.transactions
-      .filter((t) => t.type === TransactionType.WEEKLY)
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const rewardIssued = emp.transactions
-      .filter((t) => t.type === TransactionType.REWARD)
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const weeklySpent = emp.transactions
+    // ✅ TOTAL ISSUED (WEEKLY + REWARD)
+    const issued = emp.transactions
       .filter(
         (t) =>
-          t.type === TransactionType.PURCHASE &&
-          t.sourceType === StubSource.WEEKLY,
+          t.type === TransactionType.WEEKLY ||
+          t.type === TransactionType.REWARD,
       )
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    const rewardSpent = emp.transactions
-      .filter(
-        (t) =>
-          t.type === TransactionType.PURCHASE &&
-          t.sourceType === StubSource.REWARD,
-      )
+    // ✅ TOTAL SPENT (ALL PURCHASES ONLY)
+    const spent = emp.transactions
+      .filter((t) => t.type === TransactionType.PURCHASE)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    const spent = weeklySpent + rewardSpent;
-
+    // ✅ OPTIONAL: ADJUSTMENT (admin edits)
     const adjustment = emp.transactions
       .filter((t) => t.type === TransactionType.ADJUSTMENT)
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -189,8 +202,9 @@ export async function getEmployeesBasic() {
       employeeNumber: emp.employeeNumber,
       fullName: emp.fullName,
       balance: Number(emp.balance),
-      weekly: weeklyIssued - weeklySpent,
-      reward: rewardIssued - rewardSpent,
+      // weekly: weeklyIssued - weeklySpent,
+      // reward: rewardIssued - rewardSpent,
+      issued,
       spent,
       adjustment,
     };
@@ -215,7 +229,7 @@ export async function getIssuanceHistory() {
     type: t.type,
     remarks: t.remarks,
     createdAt: t.createdAt.toISOString(),
-    amount: Number(t.amount), // ✅ FIX HERE
+    amount: Number(t.amount),
   }));
 }
 
@@ -246,8 +260,6 @@ export async function issueRewardStub(
     },
   });
 
-  revalidatePath("/hr");
-
   return {
     id: transaction.id,
     employeeId: transaction.employeeId,
@@ -273,9 +285,9 @@ export async function getTransactions() {
   return transactions.map((t) => ({
     id: t.id,
     employeeId: t.employeeId,
-    amount: Number(t.amount), // ✅ FIX HERE
+    amount: Number(t.amount),
     type: t.type,
-    createdAt: t.createdAt.toISOString(), // ✅ also fix this
+    createdAt: t.createdAt.toISOString(),
     remarks: t.remarks,
   }));
 }
@@ -283,22 +295,39 @@ export async function getTransactions() {
 export async function createPurchase(data: {
   employeeId: string;
   amount: number;
-  sourceType: "WEEKLY" | "REWARD";
 }) {
-  const { employeeId, amount, sourceType } = data;
+  const { employeeId, amount } = data;
+
+  const employee = await prisma.employee.findUnique({
+    where: {
+      id: employeeId,
+    },
+    select: {
+      balance: true,
+    },
+  });
+
+  if (!employee) {
+    throw new Error("Employee not found");
+  }
+
+  if (Number(employee.balance) < amount) {
+    throw new Error("Insufficient balance");
+  }
 
   const transaction = await prisma.transaction.create({
     data: {
       employeeId,
       amount,
       type: TransactionType.PURCHASE,
-      sourceType,
       remarks: "Pantry Purchase",
     },
   });
 
-  const updatedEmployee = await prisma.employee.update({
-    where: { id: employeeId },
+  await prisma.employee.update({
+    where: {
+      id: employeeId,
+    },
     data: {
       balance: {
         decrement: amount,
@@ -306,7 +335,6 @@ export async function createPurchase(data: {
     },
   });
 
-  // return transaction;
   return {
     id: transaction.id,
     employeeId: transaction.employeeId,
@@ -317,6 +345,7 @@ export async function createPurchase(data: {
   };
 }
 
+//EXAMPLE IF naay WEEKLY or Reward STUB
 // export async function createPurchase(data: {
 //   employeeId: string;
 //   amount: number;
@@ -324,35 +353,22 @@ export async function createPurchase(data: {
 // }) {
 //   const { employeeId, amount, sourceType } = data;
 
-//   if (!employeeId) throw new Error("Employee required");
-//   if (amount <= 0) throw new Error("Invalid amount");
-
 //   const transaction = await prisma.transaction.create({
 //     data: {
 //       employeeId,
 //       amount,
 //       type: TransactionType.PURCHASE,
-//       sourceType: sourceType,
+//       sourceType,
 //       remarks: "Pantry Purchase",
 //     },
 //   });
-
-//   await prisma.employee.update({
-//     where: { id: employeeId },
-//     data: {
-//       balance: {
-//         decrement: amount,
-//       },
-//     },
-//   });
-
-//   revalidatePath("/pantry");
 
 //   return {
 //     id: transaction.id,
 //     employeeId: transaction.employeeId,
 //     amount: Number(transaction.amount),
 //     type: transaction.type,
+//     sourceType: transaction.sourceType,
 //     createdAt: transaction.createdAt.toISOString(),
 //   };
 // }

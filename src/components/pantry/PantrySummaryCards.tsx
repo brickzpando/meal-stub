@@ -15,28 +15,28 @@ export default function PantrySummaryCards() {
       color: "text-slate-900",
       bg: "bg-slate-100",
     },
-    {
-      label: "Today",
-      value: data?.todayTotal ?? 0,
-      icon: Calendar,
-      color: "text-green-600",
-      bg: "bg-green-100",
-    },
+    // {
+    //   label: "Today",
+    //   value: data?.todayTotal ?? 0,
+    //   icon: Calendar,
+    //   color: "text-green-600",
+    //   bg: "bg-green-100",
+    // },
 
-    {
-      label: "Last 7 Days",
-      value: data?.weeklyTotal ?? 0,
-      icon: TrendingUp,
-      color: "text-blue-600",
-      bg: "bg-blue-100",
-    },
-    {
-      label: "This Month",
-      value: data?.monthlyTotal ?? 0,
-      icon: CalendarDays,
-      color: "text-purple-600",
-      bg: "bg-purple-100",
-    },
+    // {
+    //   label: "Last 7 Days",
+    //   value: data?.weeklyTotal ?? 0,
+    //   icon: TrendingUp,
+    //   color: "text-blue-600",
+    //   bg: "bg-blue-100",
+    // },
+    // {
+    //   label: "This Month",
+    //   value: data?.monthlyTotal ?? 0,
+    //   icon: CalendarDays,
+    //   color: "text-purple-600",
+    //   bg: "bg-purple-100",
+    // },
   ];
 
   if (isLoading) {

@@ -1,4 +1,3 @@
-// app/actions/pantry.ts
 "use server";
 import { TransactionType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";

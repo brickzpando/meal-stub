@@ -14,6 +14,10 @@ export function useIssueWeeklyStubBulk() {
       });
 
       queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboardStats,
+      });
+
+      queryClient.invalidateQueries({
         queryKey: queryKeys.issuance,
       });
     },
