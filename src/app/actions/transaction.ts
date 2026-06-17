@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
 export async function issueWeeklyStubBulk() {
-  const now = subWeeks(new Date(), 1);
+  const now = new Date();
 
   const weekStart = startOfWeek(now, {
     weekStartsOn: 1,
