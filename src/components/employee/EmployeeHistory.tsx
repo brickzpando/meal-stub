@@ -1,14 +1,14 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Chip, InputGroup, Pagination, Table } from "@heroui/react";
+import { Chip, InputGroup, Pagination, Skeleton, Table } from "@heroui/react";
 import { Receipt, Search } from "lucide-react";
 import { useTransactions } from "@/hooks/transactions/useTransactions";
 
 export default function EmployeeHistory() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
-  const { data: transactions = [] } = useTransactions();
+  const { data: transactions = [], isLoading } = useTransactions();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -36,9 +36,53 @@ export default function EmployeeHistory() {
     return filteredHistory.slice(start, start + rowsPerPage);
   }, [filteredHistory, page]);
 
-  if (!mounted) return null;
-  if (!user?.employee) {
-    return null;
+  if (isLoading || !mounted || !user?.employee) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-xl" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <Skeleton className="h-4 w-32 rounded-md" />
+            </div>
+          </div>
+
+          <Skeleton className="h-10 w-full rounded-lg md:w-72" />
+        </div>
+
+        {/* Table Header */}
+        <div className="grid grid-cols-4 gap-4 border-b border-slate-200 pb-3">
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+          <Skeleton className="h-4 rounded-md" />
+        </div>
+
+        {/* Rows */}
+        <div className="space-y-4 pt-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-4 gap-4 items-center">
+              <Skeleton className="h-5 rounded-md" />
+              <Skeleton className="h-7 w-24 rounded-full" />
+              <Skeleton className="h-5 rounded-md" />
+              <Skeleton className="h-5 rounded-md" />
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-6 flex justify-center gap-2">
+          <Skeleton className="h-9 w-24 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-24 rounded-lg" />
+        </div>
+      </div>
+    );
   }
 
   const columns = ["DATE", "TYPE", "AMOUNT", "NOTE"];
