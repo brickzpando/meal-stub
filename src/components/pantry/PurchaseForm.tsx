@@ -21,17 +21,17 @@ export default function PurchaseForm() {
 
   const [amount, setAmount] = useState(50);
 
-  const [stubType, setStubType] = useState<"WEEKLY" | "REWARD">("WEEKLY");
+  // const [stubType, setStubType] = useState<"WEEKLY" | "REWARD">("WEEKLY");
 
   const selectedEmployee = employees.find((emp) => emp.id === employeeId);
 
   const selectedEmployeeBalance = selectedEmployee?.balance ?? 0;
 
-  const weekly = selectedEmployee?.weekly ?? 0;
-  const reward = selectedEmployee?.reward ?? 0;
+  // const weekly = selectedEmployee?.weekly ?? 0;
+  // const reward = selectedEmployee?.reward ?? 0;
   const total = selectedEmployee?.balance ?? 0;
 
-  const availableBalance = stubType === "WEEKLY" ? weekly : reward;
+  // const availableBalance = stubType === "WEEKLY" ? weekly : reward;
 
   const purchase = async () => {
     if (!employeeId) {
@@ -49,26 +49,33 @@ export default function PurchaseForm() {
       return toast.danger("Employee not found");
     }
 
-    if (availableBalance <= 0) {
-      return toast.danger(`${stubType} balance is zero`);
+    if (selectedEmployeeBalance <= 0) {
+      return toast.danger("Employee has no balance");
     }
 
-    // if (employee.balance <= 0) {
-    //   return toast.danger("Cannot purchase: employee has zero balance");
+    if (amount > selectedEmployeeBalance) {
+      return toast.warning("Insufficient balance");
+    }
+
+    // if (availableBalance <= 0) {
+    //   return toast.danger(`${stubType} balance is zero`);
     // }
 
-    // if (amount > employee.balance) {
-    //   return toast.warning("Insufficient balance");
+    // // if (employee.balance <= 0) {
+    // //   return toast.danger("Cannot purchase: employee has zero balance");
+    // // }
+
+    // // if (amount > employee.balance) {
+    // //   return toast.warning("Insufficient balance");
+    // // }
+    // if (amount > availableBalance) {
+    //   return toast.warning(`Insufficient ${stubType.toLowerCase()} balance`);
     // }
-    if (amount > availableBalance) {
-      return toast.warning(`Insufficient ${stubType.toLowerCase()} balance`);
-    }
 
     try {
       await createPurchase.mutateAsync({
         employeeId,
         amount,
-        sourceType: stubType,
       });
       toast.success("Purchase completed");
 
@@ -143,7 +150,7 @@ export default function PurchaseForm() {
             </ListBox>
           </ComboBox.Popover>
         </ComboBox>
-        {selectedEmployee && (
+        {/* {selectedEmployee && (
           <div className="rounded-md bg-slate-50 border border-slate-200 p-3 flex flex-col gap-[1px]">
             <p className="text-sm text-slate-600">
               Employee:{" "}
@@ -158,8 +165,8 @@ export default function PurchaseForm() {
               Reward Balance: ₱{selectedEmployee.reward ?? 0}
             </p>
           </div>
-        )}
-        <div>
+        )} */}
+        {/* <div>
           <Select
             selectedKey={stubType}
             onSelectionChange={(key) => setStubType(key as "WEEKLY" | "REWARD")}
@@ -189,7 +196,7 @@ export default function PurchaseForm() {
               </ListBox>
             </Select.Popover>
           </Select>
-        </div>
+        </div> */}
 
         <div>
           <Label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">

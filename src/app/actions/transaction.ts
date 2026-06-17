@@ -275,17 +275,43 @@ export async function getTransactions() {
 export async function createPurchase(data: {
   employeeId: string;
   amount: number;
-  sourceType: "WEEKLY" | "REWARD";
 }) {
-  const { employeeId, amount, sourceType } = data;
+  const { employeeId, amount } = data;
+
+  const employee = await prisma.employee.findUnique({
+    where: {
+      id: employeeId,
+    },
+    select: {
+      balance: true,
+    },
+  });
+
+  if (!employee) {
+    throw new Error("Employee not found");
+  }
+
+  if (Number(employee.balance) < amount) {
+    throw new Error("Insufficient balance");
+  }
 
   const transaction = await prisma.transaction.create({
     data: {
       employeeId,
       amount,
       type: TransactionType.PURCHASE,
-      sourceType,
       remarks: "Pantry Purchase",
+    },
+  });
+
+  await prisma.employee.update({
+    where: {
+      id: employeeId,
+    },
+    data: {
+      balance: {
+        decrement: amount,
+      },
     },
   });
 
@@ -298,3 +324,31 @@ export async function createPurchase(data: {
     createdAt: transaction.createdAt.toISOString(),
   };
 }
+
+//EXAMPLE IF naay WEEKLY or Reward STUB
+// export async function createPurchase(data: {
+//   employeeId: string;
+//   amount: number;
+//   sourceType: "WEEKLY" | "REWARD";
+// }) {
+//   const { employeeId, amount, sourceType } = data;
+
+//   const transaction = await prisma.transaction.create({
+//     data: {
+//       employeeId,
+//       amount,
+//       type: TransactionType.PURCHASE,
+//       sourceType,
+//       remarks: "Pantry Purchase",
+//     },
+//   });
+
+//   return {
+//     id: transaction.id,
+//     employeeId: transaction.employeeId,
+//     amount: Number(transaction.amount),
+//     type: transaction.type,
+//     sourceType: transaction.sourceType,
+//     createdAt: transaction.createdAt.toISOString(),
+//   };
+// }
