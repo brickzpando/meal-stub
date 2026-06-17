@@ -191,8 +191,14 @@ export default function RewardStubForm() {
           onPress={handleSubmit}
           isDisabled={isPending}
         >
-          <Award className="h-4 w-4" />
-          Grant Reward
+          {isPending ? (
+            "Granting reward..."
+          ) : (
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Grant Reward
+            </div>
+          )}
         </Button>
       </div>
     </div>

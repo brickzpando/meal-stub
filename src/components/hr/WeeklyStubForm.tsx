@@ -17,7 +17,7 @@ import { useIssueWeeklyStub } from "@/hooks/transactions/issueWeeklyStub";
 export default function WeeklyStubForm() {
   const [employeeId, setEmployeeId] = useState("");
   const { data: employees = [], isLoading } = useEmployeesBasic();
-  const { mutate: issueWeekly } = useIssueWeeklyStub();
+  const { mutate: issueWeekly, isPending } = useIssueWeeklyStub();
 
   const handleSubmit = () => {
     if (!employeeId) {
@@ -55,7 +55,7 @@ export default function WeeklyStubForm() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <Skeleton className="h-4 w-20 rounded-md" />
 
           <Skeleton className="h-10 w-full rounded-md" />
@@ -127,8 +127,14 @@ export default function WeeklyStubForm() {
           onClick={handleSubmit}
           className="bg-blue-600 h-10 rounded-md hover:bg-blue-700 w-full text-white"
         >
-          <Send className="h-4 w-4" />
-          Issue ₱100
+          {isPending ? (
+            "Issuing..."
+          ) : (
+            <div className="flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              <span>Issue ₱100</span>
+            </div>
+          )}
         </Button>
       </div>
     </div>

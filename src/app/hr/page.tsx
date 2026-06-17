@@ -9,7 +9,7 @@ import BulkWeeklyStubCard from "@/components/hr/BulkWeeklyStubCard";
 import DataManagement from "@/components/admin/DataManagement";
 export default function HRPage() {
   return (
-    <>
+    <div className="min-h-screen">
       <TopBar role="HR" />
       <main className="space-y-6 p-4 md:p-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -27,13 +27,9 @@ export default function HRPage() {
           <RewardStubForm />
         </div>
 
-        {/* <div className="grid gap-6 xl:grid-cols-2">
-          <WeeklyStubForm />
-          <RewardStubForm />
-        </div> */}
         <EmployeeTable />
         <IssueHistoryTable />
       </main>
-    </>
+    </div>
   );
 }

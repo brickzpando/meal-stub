@@ -21,6 +21,9 @@ export function useCreateEmployee() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.employeeBasic,
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.systemStats,
+      });
     },
   });
 }
