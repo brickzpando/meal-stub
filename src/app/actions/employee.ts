@@ -367,3 +367,12 @@ export async function resetAllEmployeeBalances() {
     message: "All employee balances reset to 0",
   };
 }
+
+export async function resetAllTransactions() {
+  await prisma.transaction.deleteMany({});
+
+  return {
+    success: true,
+    message: "All transactions have been cleared",
+  };
+}

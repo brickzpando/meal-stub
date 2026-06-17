@@ -89,7 +89,7 @@ export default function WeeklyStubForm() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Label className="text-sm font-medium text-slate-700">Employee</Label>
 
         <ComboBox
