@@ -60,6 +60,9 @@ export async function getEmployees() {
       department: true,
       balance: true,
     },
+    orderBy: {
+      createdAt: "desc", // 🔥 latest created employees first
+    },
   });
 
   return employees.map((emp) => ({

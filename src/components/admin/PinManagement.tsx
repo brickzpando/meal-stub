@@ -25,7 +25,7 @@ export default function PinManagement() {
 
   const { data, isLoading } = usePins();
 
-  const saveMutation = useSavePins();
+  const { mutateAsync, isPending } = useSavePins();
 
   useEffect(() => {
     if (!data) return;
@@ -38,7 +38,7 @@ export default function PinManagement() {
 
   const savePins = async () => {
     try {
-      await saveMutation.mutateAsync({
+      await mutateAsync({
         hr,
         pantry,
         admin,
@@ -240,9 +240,9 @@ export default function PinManagement() {
                     className="flex-1"
                     variant="primary"
                     onPress={savePins}
-                    isDisabled={saveMutation.isPending}
+                    isDisabled={isPending}
                   >
-                    Confirm Save
+                    {isPending ? "Saving..." : "Confirm Save"}
                   </Button>
                 </Modal.Footer>
               </Modal.Dialog>

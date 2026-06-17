@@ -27,11 +27,28 @@ export default function EmployeeTableAdmin() {
   const { data: employees = [], isLoading } = useEmployees();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const { mutate: deleteEmp } = useDeleteEmployee();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<Employee | null>(null);
+  const { mutate: deleteEmp, isPending: isDeleting } = useDeleteEmployee();
   const rowsPerPage = 10;
   const { data: departments = [] } = useDepartments();
   const { mutate: updateEmp, isPending } = useUpdateEmployee();
 
+  const openDelete = (emp: Employee) => {
+    setToDelete(emp);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!toDelete) return;
+
+    deleteEmp(toDelete.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        setToDelete(null);
+      },
+    });
+  };
   const [dept, setDept] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<Employee | null>(null);
@@ -277,10 +294,18 @@ export default function EmployeeTableAdmin() {
                       Edit
                     </Button>
 
-                    <Button
+                    {/* <Button
                       size="sm"
                       variant="danger-soft"
                       onClick={() => removeEmployee(emp.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button> */}
+                    <Button
+                      size="sm"
+                      variant="danger-soft"
+                      onPress={() => openDelete(emp)}
                     >
                       <Trash2 className="h-4 w-4" />
                       Delete
@@ -413,7 +438,50 @@ export default function EmployeeTableAdmin() {
                 </Button>
 
                 <Button size="sm" onPress={handleUpdate} isPending={isPending}>
-                  Save Changes
+                  {isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
+      <Modal isOpen={deleteOpen} onOpenChange={setDeleteOpen}>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-80">
+              <Modal.CloseTrigger />
+
+              <Modal.Header>
+                <Modal.Heading>Delete Employee</Modal.Heading>
+              </Modal.Header>
+
+              <Modal.Body>
+                <p className="text-sm text-slate-600">
+                  Are you sure you want to delete <b>{toDelete?.fullName}</b>?
+                </p>
+
+                <p className="mt-2 text-xs text-red-500">
+                  This action cannot be undone.
+                </p>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => setDeleteOpen(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onPress={confirmDelete}
+                  isDisabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>
