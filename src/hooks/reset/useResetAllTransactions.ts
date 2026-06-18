@@ -16,6 +16,14 @@ export function useResetAllTransactions() {
         queryKey: queryKeys.transactions,
       });
 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.adminDashboardStats,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.weeklySummary,
+      });
+
       // refresh issuance history if ginagamit nimo
       queryClient.invalidateQueries({
         queryKey: queryKeys.issuance,
