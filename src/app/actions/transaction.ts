@@ -70,65 +70,145 @@ export async function issueWeeklyStubBulk() {
   };
 }
 
+// export async function issueWeeklyStub(employeeId: string) {
+//   if (!employeeId) {
+//     throw new Error("Employee required");
+//   }
+
+//   const now = new Date();
+
+//   const weekStart = startOfWeek(now, {
+//     weekStartsOn: 1, // Monday
+//   });
+
+//   const weekEnd = endOfWeek(now, {
+//     weekStartsOn: 1,
+//   });
+
+//   const existingWeekly = await prisma.transaction.findFirst({
+//     where: {
+//       employeeId,
+//       type: "WEEKLY",
+//       createdAt: {
+//         gte: weekStart,
+//         lte: weekEnd,
+//       },
+//     },
+//   });
+
+//   if (existingWeekly) {
+//     return {
+//       success: false,
+//       message: "This employee has already received a weekly stub this week.",
+//     };
+//   }
+
+//   const transaction = await prisma.transaction.create({
+//     data: {
+//       employeeId,
+//       amount: 100,
+//       type: TransactionType.WEEKLY,
+//       sourceType: StubSource.WEEKLY,
+//       remarks: "Weekly Stub",
+//     },
+//   });
+
+//   await prisma.employee.update({
+//     where: { id: employeeId },
+//     data: {
+//       balance: {
+//         increment: 100,
+//       },
+//     },
+//   });
+
+//   return {
+//     id: transaction.id,
+//     employeeId: transaction.employeeId,
+//     amount: Number(transaction.amount),
+//     type: transaction.type,
+//     remarks: transaction.remarks,
+//     createdAt: transaction.createdAt.toISOString(),
+//   };
+// }
+
 export async function issueWeeklyStub(employeeId: string) {
   if (!employeeId) {
-    throw new Error("Employee required");
+    return {
+      success: false,
+      message: "Employee required",
+    };
   }
 
   const now = new Date();
 
   const weekStart = startOfWeek(now, {
-    weekStartsOn: 1, // Monday
+    weekStartsOn: 1,
   });
 
   const weekEnd = endOfWeek(now, {
     weekStartsOn: 1,
   });
 
-  const existingWeekly = await prisma.transaction.findFirst({
-    where: {
-      employeeId,
-      type: "WEEKLY",
-      createdAt: {
-        gte: weekStart,
-        lte: weekEnd,
+  try {
+    const existingWeekly = await prisma.transaction.findFirst({
+      where: {
+        employeeId,
+        type: TransactionType.WEEKLY,
+        createdAt: {
+          gte: weekStart,
+          lte: weekEnd,
+        },
       },
-    },
-  });
+    });
 
-  if (existingWeekly) {
-    throw new Error(
-      "This employee has already received a weekly stub this week.",
-    );
+    if (existingWeekly) {
+      return {
+        success: false,
+        message: "This employee has already received a weekly stub this week.",
+      };
+    }
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        employeeId,
+        amount: 100,
+        type: TransactionType.WEEKLY,
+        sourceType: StubSource.WEEKLY,
+        remarks: "Weekly Stub",
+      },
+    });
+
+    await prisma.employee.update({
+      where: {
+        id: employeeId,
+      },
+      data: {
+        balance: {
+          increment: 100,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        id: transaction.id,
+        employeeId: transaction.employeeId,
+        amount: Number(transaction.amount),
+        type: transaction.type,
+        remarks: transaction.remarks,
+        createdAt: transaction.createdAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error("Issue Weekly Stub Error:", error);
+
+    return {
+      success: false,
+      message: "Failed to issue weekly stub.",
+    };
   }
-
-  const transaction = await prisma.transaction.create({
-    data: {
-      employeeId,
-      amount: 100,
-      type: TransactionType.WEEKLY,
-      sourceType: StubSource.WEEKLY,
-      remarks: "Weekly Stub",
-    },
-  });
-
-  await prisma.employee.update({
-    where: { id: employeeId },
-    data: {
-      balance: {
-        increment: 100,
-      },
-    },
-  });
-
-  return {
-    id: transaction.id,
-    employeeId: transaction.employeeId,
-    amount: Number(transaction.amount),
-    type: transaction.type,
-    remarks: transaction.remarks,
-    createdAt: transaction.createdAt.toISOString(),
-  };
 }
 export async function getEmployeesBasic() {
   const employees = await prisma.employee.findMany({

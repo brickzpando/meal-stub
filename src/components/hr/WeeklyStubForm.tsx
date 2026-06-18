@@ -28,20 +28,53 @@ export default function WeeklyStubForm() {
     }
 
     issueWeekly(employeeId, {
-      onSuccess: () => {
+      onSuccess: (result) => {
+        if (!result.success) {
+          toast.warning("Weekly stub not issued", {
+            description: result.message,
+          });
+
+          return;
+        }
+
         setEmployeeId("");
+
         toast.success("Weekly stub issued", {
           description: "₱100 has been added to the employee balance.",
         });
       },
-      onError: (err) => {
+
+      onError: () => {
         toast.danger("Failed to issue weekly stub", {
-          description:
-            err instanceof Error ? err.message : "Something went wrong.",
+          description: "Something went wrong.",
         });
       },
     });
   };
+
+  // const handleSubmit = () => {
+  //   if (!employeeId) {
+  //     toast.warning("No employee selected", {
+  //       description: "Please select an employee before issuing a weekly stub.",
+  //     });
+  //     return;
+  //   }
+
+  //   issueWeekly(employeeId, {
+  //     onSuccess: () => {
+  //       setEmployeeId("");
+  //       toast.success("Weekly stub issued", {
+  //         description: "₱100 has been added to the employee balance.",
+  //       });
+  //     },
+  //     onError: (err) => {
+  //       toast.danger("Failed to issue weekly stub", {
+  //         description:
+  //           err instanceof Error ? err.message : "Something went wrong.",
+  //       });
+  //     },
+  //   });
+  // };
 
   if (isLoading) {
     return (
